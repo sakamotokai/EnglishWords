@@ -19,19 +19,17 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Build
 import androidx.compose.material.icons.filled.Call
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.example.englishwords.models.ResponseData
-import com.example.englishwords.models.retrofitModels.ResponseHandler
+import com.example.englishwords.models.retrofitModels.CompletedResult
 import com.example.englishwords.ui.theme.ownTheme.OwnTheme
 import com.example.englishwords.viewModels.MainViewModel
 import kotlinx.coroutines.launch
@@ -42,26 +40,18 @@ import org.koin.androidx.compose.getViewModel
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalAnimationApi::class)
 @Composable
 fun MainScreen(isDarkmode: MutableState<Boolean>, ownStyle: MutableState<OwnTheme.OwnStyle>) {
+    Log.e("Log","MainScreen")
     var buttonWasClicked by remember { mutableStateOf(false) }
     val mediaPlayer = MediaPlayer()
-    var urlToListening: String? by remember { mutableStateOf("") }
     var clickOnButtonBoolean: Boolean by remember { mutableStateOf(false) }
     var animatedErrorButton: Boolean by remember { mutableStateOf(false) }
     var moveButton: Boolean by remember { mutableStateOf(false) }
     val viewModel = getViewModel<MainViewModel>()
     var endPoint by remember { mutableStateOf("") }
     val scope = rememberCoroutineScope()
-    val flowData = viewModel.wordDefinition.collectAsState()
     val completedResult = viewModel.completedResult.collectAsState()
-    val wordDefinition: ResponseHandler? =
-        if (flowData.value != null) {
-            ResponseHandler(
-                completed = flowData.value!!.body()!!,
-                status = flowData.value!!.isSuccessful
-            )
-        } else null
-    var oldEndPoint by remember { mutableStateOf(endPoint) }
-    var oldWordDefinition by remember { mutableStateOf(wordDefinition) }
+    var urlToListening: String? by remember { mutableStateOf("") }
+    Log.e("Log","Recomposing to based")
     val scale by animateFloatAsState(
         targetValue = if (animatedErrorButton) 1.1f else 1f,
         animationSpec = repeatable(
@@ -122,8 +112,7 @@ fun MainScreen(isDarkmode: MutableState<Boolean>, ownStyle: MutableState<OwnThem
                 ) {
                     Button(
                         onClick = {
-                            viewModel.getWordDefinition(endPoint)
-                            viewModel.getWordDefinitionInstance(endPoint)
+                            viewModel.getCompletedResult(endPoint)
                             buttonWasClicked = true
                             urlToListening = null
                             scope.launch {
@@ -180,7 +169,7 @@ fun MainScreen(isDarkmode: MutableState<Boolean>, ownStyle: MutableState<OwnThem
                             } else Modifier
                         ) {
                             Icon(
-                                Icons.Filled.Call,
+                                Icons.Filled.PlayArrow,
                                 contentDescription = null,
                                 tint = OwnTheme.colors.primaryText
                             )
@@ -188,41 +177,12 @@ fun MainScreen(isDarkmode: MutableState<Boolean>, ownStyle: MutableState<OwnThem
                     }
                 }
             }
-            /* AnimatedContent(
-                targetState = true,
-                transitionSpec = {
-                    fadeIn(animationSpec = tween(300, delayMillis = 90)) +
-                            scaleIn(
-                                initialScale = 0.92f,
-                                animationSpec = tween(220, delayMillis = 90)
-                            ) with
-                            fadeOut(animationSpec = tween(90))
-                }
-            ) {
-                ColumnOfContent(
-                    viewModel = viewModel,
-                    wordDefinition = wordDefinition,
-                    returnUrlToListening = { urlToListening = it },
-                    buttonWasClicked = buttonWasClicked,
-                )
-            }*/
-        }
-            LazyColumn{
-                if(completedResult.value!=null)
-                    if(completedResult.value!!.isSuccess)
-                        if(completedResult.value!!.word!=null)
-                        item{
-                            Text(text = completedResult.value!!.word!!)
-                        }
-                if(completedResult.value!!.definition!=null)
-                    items(completedResult.value!!.definition!!){item->
-                        Text(text = item)
-                    }
-                if(completedResult.value!!.instance!=null)
-                    items(completedResult.value!!.instance!!){item->
-                        Text(text = item)
-                    }
-           // }
+            ColumnOfContent(
+                viewModel = viewModel,
+                completedResult = completedResult.value,
+                buttonWasClicked = buttonWasClicked,
+                returnUrl = {urlToListening = it}
+            )
         }
     }
 }
@@ -231,18 +191,17 @@ fun MainScreen(isDarkmode: MutableState<Boolean>, ownStyle: MutableState<OwnThem
 @Composable
 fun ColumnOfContent(
     viewModel: MainViewModel,
-    wordDefinition: ResponseHandler?,
-    returnUrlToListening: (result: String?) -> Unit,
+    completedResult: CompletedResult?,
     buttonWasClicked: Boolean,
+    returnUrl:(result:String?)->Unit
 ) {
+    Log.e("Log","ColumnOnContent")
     if (viewModel.loading.value) CircularProgressIndicator(Modifier.fillMaxSize()) else {
-        if (wordDefinition != null) {
-            if (viewModel.requestComplete.value) {
+        if (completedResult!=null) {
+            if (completedResult.isSuccess) {
+                returnUrl(completedResult.urlToListening)
                 ShowCard(
-                    definition = wordDefinition,
-                    urlToListening = { link ->
-                        returnUrlToListening(link)
-                    }
+                    completedResult = completedResult
                 )
             } else {
                 Text(
@@ -267,6 +226,7 @@ fun ColumnOfContent(
 
 @Composable
 fun TopBar(isDarkmode: MutableState<Boolean>, ownStyle: MutableState<OwnTheme.OwnStyle>) {
+    Log.e("Log","TopBar")
     FloatingActionButton(
         onClick = { ownStyle.value = OwnTheme.OwnStyle.Black },
         modifier = Modifier
@@ -333,6 +293,7 @@ fun SearchBar(
     returnEndPoint: (endPoint: String) -> Unit,
     moveButton: (result: Boolean) -> Unit
 ) {
+    Log.e("Log","SearchBar")
     var endPoint by remember {
         mutableStateOf(endPoint)
     }
@@ -369,13 +330,9 @@ fun SearchBar(
 
 @Composable
 fun ShowCard(
-    definition: ResponseHandler,
-    urlToListening: (link: String?) -> Unit = {},
+    completedResult: CompletedResult?
 ) {
-    var responseData: ResponseData by remember {
-        mutableStateOf(ResponseData("", mutableListOf(), mutableListOf()))
-    }
-    var url by remember { mutableStateOf("") }
+    Log.e("Log","ShowCard")
     LazyColumn(
         modifier = Modifier
             .background(
@@ -383,48 +340,31 @@ fun ShowCard(
                 shape = OwnTheme.shapes.cornersStyle
             )
     ) {
-        if (definition.status) {
-            definition.completed.forEach { model ->
-                responseData.word = model.word
-                model.phonetics.forEach {
-                    if (it.audio != null)
-                        url = it.audio
-                    else null
+        if(completedResult!=null)
+            if(completedResult.isSuccess) {
+                item {
+                    Card(
+                        item = "Word is ${completedResult.word}",
+                        color = OwnTheme.colors.green,
+                        centerText = true
+                    )
                 }
-                urlToListening(url)
-                model.meanings.forEach { meaning ->
-                    meaning.definitions.forEach { definit ->
-                        responseData.descriptions!!.add(definit.definition)
-                        if (definit.example != null)
-                            responseData.instances!!.add(definit.example)
+                if (completedResult.definition != null)
+                    items(completedResult.definition) { item ->
+                        Card(item = item, color = OwnTheme.colors.red, cardType = "Definition:")
                     }
-                }
-            }
-        }
-        if (responseData.word != null)
-            item {
-                //Text(text = responseData!!.word!!)
-                Card(
-                    item = "Word is ${responseData.word!!}",
-                    color = OwnTheme.colors.green,
-                    centerText = true
-                )
-            }
-        if (responseData.descriptions != null)
-            items(responseData.descriptions!!) { item ->
-                Card(item = item, color = OwnTheme.colors.red, cardType = "Definition:")
-            }
-        if (responseData.instances != null)
-            items(responseData.instances!!) { item ->
-                Card(item = item, color = OwnTheme.colors.blue, cardType = "Instance:")
+                if (completedResult.instance != null)
+                    items(completedResult.instance) { item ->
+                        Card(item = item, color = OwnTheme.colors.blue, cardType = "Instance:")
+                    }
             }
     }
-    responseData = ResponseData("", mutableListOf(), mutableListOf())
 }
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter", "SuspiciousIndentation")
 @Composable
 fun Card(item: String, color: Color, centerText: Boolean = false, cardType: String = "") {
+    Log.e("Log","Card")
     var sentence: String? by remember { mutableStateOf(null) }
     if (sentence != null)
         WindowAboveCard(
@@ -481,6 +421,7 @@ fun Card(item: String, color: Color, centerText: Boolean = false, cardType: Stri
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun WindowAboveCard(word: String?) {
+    Log.e("Log","WindowAboveCard")
     var wordInstance: String? by remember { mutableStateOf(word) }
     var visible by remember { mutableStateOf(true) }
     val viewModel = get<MainViewModel>()
@@ -488,20 +429,10 @@ fun WindowAboveCard(word: String?) {
         visible = true
         wordInstance = word
     }
-    var list: MutableList<String> = mutableListOf()
     if (word != null) {
-        viewModel.getWordDefinition(word)
-        val observData = viewModel.wordDefinition.collectAsState()
-        AnimatedVisibility(visible = visible) {
-            if (viewModel.loading.value) {
-                Row(//in future
-                    Modifier.fillMaxSize(),
-                    horizontalArrangement = Arrangement.Center
-                ) {
-                    CircularProgressIndicator(modifier = Modifier)
-                }
-            }
-            list.clear()
+        viewModel.getCompletedResult(word)
+        val completedResult = viewModel.completedResult.collectAsState()
+        AnimatedVisibility(visible = visible){
             Column(
                 modifier = Modifier
                     .fillMaxHeight()
@@ -510,15 +441,6 @@ fun WindowAboveCard(word: String?) {
                         shape = OwnTheme.sizesShapes.smallShape
                     )
             ) {
-                if (observData.value != null)
-                    if (observData.value!!.body() != null)
-                        observData.value!!.body()!!.forEach { mainModel ->
-                            mainModel.meanings.forEach { meaning ->
-                                meaning.definitions.forEach { definition ->
-                                    list.add(definition.definition)
-                                }
-                            }
-                        }
                 Row(
                     modifier = Modifier
                         .fillMaxWidth(),
@@ -534,8 +456,45 @@ fun WindowAboveCard(word: String?) {
                             .background(OwnTheme.colors.tintColor, shape = CircleShape)
                     )
                 }
-                list.forEach { item ->
-                    Card(item = item, color = OwnTheme.colors.blue)
+                if (viewModel.loading.value) {
+                    Row(
+                        Modifier.fillMaxSize(),
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        CircularProgressIndicator(modifier = Modifier)
+                    }
+                } else {
+                    if (completedResult.value != null) {
+                        if (completedResult.value!!.isSuccess) {
+                            if(completedResult.value!!.word!=null){
+                                Card(
+                                    item = "Word is ${completedResult.value!!.word}",
+                                    color = OwnTheme.colors.green,
+                                    centerText = true
+                                )
+                            }
+                            if (completedResult.value!!.definition != null)
+                                completedResult.value!!.definition!!.forEach { item ->
+                                    Card(
+                                        item = item,
+                                        color = OwnTheme.colors.red,
+                                        cardType = "Definition:"
+                                    )
+                                }
+                            if (completedResult.value!!.instance != null)
+                                completedResult.value!!.instance!!.forEach { item ->
+                                    Card(
+                                        item = item,
+                                        color = OwnTheme.colors.blue,
+                                        cardType = "Instance:"
+                                    )
+                                }
+                        } else {
+                            Card(item = "Error try later", color = OwnTheme.colors.error)
+                        }
+                    } else {
+                        Card(item = "Error try later", color = OwnTheme.colors.error)
+                    }
                 }
             }
         }

@@ -1,6 +1,5 @@
 package com.example.englishwords.viewModels
 
-import android.util.Log
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -23,16 +22,11 @@ class MainViewModel(
     ViewModel() {
 
     var loading = mutableStateOf(false)
-    var requestComplete = mutableStateOf(false)
-
-    private var _wordDefinition: MutableStateFlow<Response<MainEnglishModel>?> =
-        MutableStateFlow(null)
-    var wordDefinition: StateFlow<Response<MainEnglishModel>?> = _wordDefinition
 
     private var _completedResult:MutableStateFlow<CompletedResult?> = MutableStateFlow(null)
     var completedResult:StateFlow<CompletedResult?> = _completedResult
 
-    fun getWordDefinitionInstance(endPoint: String) {
+    fun getCompletedResult(endPoint: String) {
         viewModelScope.launch {
             loading.value = true
             var data = async(Dispatchers.IO) {
@@ -43,8 +37,12 @@ class MainViewModel(
                     var word: String? = null
                     var definit: MutableList<String> = mutableListOf()
                     var instanc: MutableList<String> = mutableListOf()
+                    var urlTo:String? = null
                     data.body()!!.forEach { model ->
                         word = model.word
+                        model.phonetics.forEach { url->
+                            urlTo = url.audio
+                        }
                         model.meanings.forEach { meaning ->
                             meaning.definitions.forEach { definition ->
                                 definit.add(definition.definition)
@@ -57,25 +55,12 @@ class MainViewModel(
                         isSuccess = true,
                         word = word,
                         definition = definit,
-                        instance = instanc
+                        instance = instanc,
+                        urlToListening = urlTo
                     )
                 } else {
-                    return@withContext CompletedResult(isSuccess = false,null,null,null)
+                    return@withContext CompletedResult(isSuccess = false,null,null,null,null)
                 }
-            }
-            loading.value = false
-        }
-    }
-
-    fun getWordDefinition(endPoint: String) {
-        viewModelScope.launch {
-            loading.value = true
-            val result = repository.getWordDefinition(endPoint)
-            if (result.isSuccessful) {
-                _wordDefinition.value = result
-                requestComplete.value = true
-            } else {
-                requestComplete.value = false
             }
             loading.value = false
         }
