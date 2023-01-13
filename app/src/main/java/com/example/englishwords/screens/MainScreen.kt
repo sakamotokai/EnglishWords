@@ -52,6 +52,7 @@ fun MainScreen(isDarkmode: MutableState<Boolean>, ownStyle: MutableState<OwnThem
     var endPoint by remember { mutableStateOf("") }
     val scope = rememberCoroutineScope()
     val flowData = viewModel.wordDefinition.collectAsState()
+    val completedResult = viewModel.completedResult.collectAsState()
     val wordDefinition: ResponseHandler? =
         if (flowData.value != null) {
             ResponseHandler(
@@ -122,6 +123,7 @@ fun MainScreen(isDarkmode: MutableState<Boolean>, ownStyle: MutableState<OwnThem
                     Button(
                         onClick = {
                             viewModel.getWordDefinition(endPoint)
+                            viewModel.getWordDefinitionInstance(endPoint)
                             buttonWasClicked = true
                             urlToListening = null
                             scope.launch {
@@ -186,7 +188,7 @@ fun MainScreen(isDarkmode: MutableState<Boolean>, ownStyle: MutableState<OwnThem
                     }
                 }
             }
-            AnimatedContent(
+            /* AnimatedContent(
                 targetState = true,
                 transitionSpec = {
                     fadeIn(animationSpec = tween(300, delayMillis = 90)) +
@@ -203,7 +205,24 @@ fun MainScreen(isDarkmode: MutableState<Boolean>, ownStyle: MutableState<OwnThem
                     returnUrlToListening = { urlToListening = it },
                     buttonWasClicked = buttonWasClicked,
                 )
-            }
+            }*/
+        }
+            LazyColumn{
+                if(completedResult.value!=null)
+                    if(completedResult.value!!.isSuccess)
+                        if(completedResult.value!!.word!=null)
+                        item{
+                            Text(text = completedResult.value!!.word!!)
+                        }
+                if(completedResult.value!!.definition!=null)
+                    items(completedResult.value!!.definition!!){item->
+                        Text(text = item)
+                    }
+                if(completedResult.value!!.instance!=null)
+                    items(completedResult.value!!.instance!!){item->
+                        Text(text = item)
+                    }
+           // }
         }
     }
 }
