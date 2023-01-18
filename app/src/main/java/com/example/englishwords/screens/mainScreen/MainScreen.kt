@@ -1,6 +1,7 @@
 package com.example.englishwords.screens
 
 import android.annotation.SuppressLint
+import android.content.SharedPreferences
 import android.media.MediaPlayer
 import android.util.Log
 import androidx.compose.animation.*
@@ -29,18 +30,35 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavHostController
+import com.example.englishwords.SharedPreferencesEnum
+import com.example.englishwords.db.room.Modeldb
 import com.example.englishwords.models.retrofitModels.CompletedResult
+import com.example.englishwords.screens.mainScreen.MainScreenViewModel
 import com.example.englishwords.ui.theme.ownTheme.OwnTheme
+import com.example.englishwords.viewModels.GlobalSettingsViewModel
 import com.example.englishwords.viewModels.MainViewModel
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.get
 import org.koin.androidx.compose.getViewModel
+import org.koin.androidx.compose.koinViewModel
+import org.koin.core.parameter.parametersOf
 
-@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter", "CommitPrefEdits")
+@SuppressLint(
+    "UnusedMaterial3ScaffoldPaddingParameter", "CommitPrefEdits",
+    "UnrememberedMutableState"
+)
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalAnimationApi::class)
 @Composable
-fun MainScreen(isDarkmode: MutableState<Boolean>, ownStyle: MutableState<OwnTheme.OwnStyle>) {
-    Log.e("Log","MainScreen")
+fun MainScreen() {
+    Log.e("Log", "MainScreen")
+    val sharedPreferences: SharedPreferences =
+        get(parameters = { parametersOf(SharedPreferencesEnum.settings.route) })
+    var isDarkmode: MutableState<Boolean> =
+        mutableStateOf(sharedPreferences.getBoolean("isDarkmode", false))
     var buttonWasClicked by remember { mutableStateOf(false) }
     val mediaPlayer = MediaPlayer()
     var clickOnButtonBoolean: Boolean by remember { mutableStateOf(false) }
@@ -51,7 +69,7 @@ fun MainScreen(isDarkmode: MutableState<Boolean>, ownStyle: MutableState<OwnThem
     val scope = rememberCoroutineScope()
     val completedResult = viewModel.completedResult.collectAsState()
     var urlToListening: String? by remember { mutableStateOf("") }
-    Log.e("Log","Recomposing to based")
+    Log.e("Log", "Recomposing to based")
     val scale by animateFloatAsState(
         targetValue = if (animatedErrorButton) 1.1f else 1f,
         animationSpec = repeatable(
@@ -88,7 +106,7 @@ fun MainScreen(isDarkmode: MutableState<Boolean>, ownStyle: MutableState<OwnThem
                     ),
                 horizontalArrangement = Arrangement.End
             ) {
-                TopBar(isDarkmode = isDarkmode, ownStyle = ownStyle)
+                TopBar(isDarkmode = isDarkmode)
             }
             Spacer(modifier = Modifier.height(10.dp))
             SearchBar(
@@ -140,7 +158,6 @@ fun MainScreen(isDarkmode: MutableState<Boolean>, ownStyle: MutableState<OwnThem
                     ) {
                         Text(text = "Search", color = OwnTheme.colors.primaryText)
                     }
-
                 }
                 AnimatedVisibility(
                     visible = moveButton
@@ -181,7 +198,7 @@ fun MainScreen(isDarkmode: MutableState<Boolean>, ownStyle: MutableState<OwnThem
                 viewModel = viewModel,
                 completedResult = completedResult.value,
                 buttonWasClicked = buttonWasClicked,
-                returnUrl = {urlToListening = it}
+                returnUrl = { urlToListening = it }
             )
         }
     }
@@ -193,11 +210,11 @@ fun ColumnOfContent(
     viewModel: MainViewModel,
     completedResult: CompletedResult?,
     buttonWasClicked: Boolean,
-    returnUrl:(result:String?)->Unit
+    returnUrl: (result: String?) -> Unit
 ) {
-    Log.e("Log","ColumnOnContent")
+    Log.e("Log", "ColumnOnContent")
     if (viewModel.loading.value) CircularProgressIndicator(Modifier.fillMaxSize()) else {
-        if (completedResult!=null) {
+        if (completedResult != null) {
             if (completedResult.isSuccess) {
                 returnUrl(completedResult.urlToListening)
                 ShowCard(
@@ -224,56 +241,47 @@ fun ColumnOfContent(
     }
 }
 
+interface ColorListInterface {
+    var colorList: List<OwnTheme.OwnStyle>
+}
+
+class ColorListImpl : ColorListInterface {
+    override var colorList: List<OwnTheme.OwnStyle> =
+        listOf<OwnTheme.OwnStyle>(
+            OwnTheme.OwnStyle.Black,
+            OwnTheme.OwnStyle.Green,
+            OwnTheme.OwnStyle.Blue,
+            OwnTheme.OwnStyle.Red,
+            OwnTheme.OwnStyle.Purple
+        )
+}
+
 @Composable
-fun TopBar(isDarkmode: MutableState<Boolean>, ownStyle: MutableState<OwnTheme.OwnStyle>) {
-    Log.e("Log","TopBar")
-    FloatingActionButton(
-        onClick = { ownStyle.value = OwnTheme.OwnStyle.Black },
-        modifier = Modifier
-            .border(1.dp, color = OwnTheme.colors.primaryText, shape = CircleShape)
-            .size(40.dp),
-        containerColor = OwnTheme.colors.black,
-        shape = CircleShape,
-    ) {}
-    Spacer(modifier = Modifier.width(4.dp))
-    FloatingActionButton(
-        onClick = { ownStyle.value = OwnTheme.OwnStyle.Green },
-        modifier = Modifier
-            .border(1.dp, color = OwnTheme.colors.primaryText, shape = CircleShape)
-            .size(40.dp),
-        containerColor = OwnTheme.colors.green,
-        shape = CircleShape
-    ) {}
-    Spacer(modifier = Modifier.width(4.dp))
-    FloatingActionButton(
-        onClick = { ownStyle.value = OwnTheme.OwnStyle.Blue },
-        modifier = Modifier
-            .border(1.dp, color = OwnTheme.colors.primaryText, shape = CircleShape)
-            .size(40.dp),
-        containerColor = OwnTheme.colors.blue,
-        shape = CircleShape
-    ) {}
-    Spacer(modifier = Modifier.width(4.dp))
-    FloatingActionButton(
-        onClick = { ownStyle.value = OwnTheme.OwnStyle.Red },
-        modifier = Modifier
-            .border(1.dp, color = OwnTheme.colors.primaryText, shape = CircleShape)
-            .size(40.dp),
-        containerColor = OwnTheme.colors.red,
-        shape = CircleShape
-    ) {}
-    Spacer(modifier = Modifier.width(4.dp))
-    FloatingActionButton(
-        onClick = { ownStyle.value = OwnTheme.OwnStyle.Purple },
-        modifier = Modifier
-            .border(1.dp, color = OwnTheme.colors.primaryText, shape = CircleShape)
-            .size(40.dp),
-        containerColor = OwnTheme.colors.purple,
-        shape = CircleShape
-    ) {}
-    Spacer(modifier = Modifier.width(4.dp))
+fun TopBar(isDarkmode: MutableState<Boolean>) {
+    val globalSettingsViewModel: GlobalSettingsViewModel = koinViewModel()
+    val colorList = ColorListImpl().colorList
+    colorList.forEach { style ->
+        FloatingActionButton(
+            onClick = { globalSettingsViewModel.changeOwnStyle(style) },
+            modifier = Modifier
+                .border(1.dp, color = OwnTheme.colors.primaryText, shape = CircleShape)
+                .size(40.dp),
+            containerColor = when (style.name) {
+                "Purple" -> OwnTheme.colors.purple
+                "Blue" -> OwnTheme.colors.blue
+                "Red" -> OwnTheme.colors.red
+                "Green" -> OwnTheme.colors.green
+                "Black" -> OwnTheme.colors.black
+                else -> OwnTheme.colors.purple
+            },
+            shape = CircleShape,
+        ) {}
+        Spacer(modifier = Modifier.width(4.dp))
+    }
+    Log.e("Log", "TopBar")
     IconButton(
         onClick = {
+            globalSettingsViewModel.changeDarkMode()
             isDarkmode.value = !isDarkmode.value
         },
         Modifier.height(40.dp)
@@ -293,7 +301,7 @@ fun SearchBar(
     returnEndPoint: (endPoint: String) -> Unit,
     moveButton: (result: Boolean) -> Unit
 ) {
-    Log.e("Log","SearchBar")
+    Log.e("Log", "SearchBar")
     var endPoint by remember {
         mutableStateOf(endPoint)
     }
@@ -332,7 +340,7 @@ fun SearchBar(
 fun ShowCard(
     completedResult: CompletedResult?
 ) {
-    Log.e("Log","ShowCard")
+    Log.e("Log", "ShowCard")
     LazyColumn(
         modifier = Modifier
             .background(
@@ -340,13 +348,15 @@ fun ShowCard(
                 shape = OwnTheme.shapes.cornersStyle
             )
     ) {
-        if(completedResult!=null)
-            if(completedResult.isSuccess) {
+        if (completedResult != null)
+            if (completedResult.isSuccess) {
                 item {
                     Card(
                         item = "Word is ${completedResult.word}",
                         color = OwnTheme.colors.green,
-                        centerText = true
+                        centerText = true,
+                        savable = true,
+                        completedResult = completedResult
                     )
                 }
                 if (completedResult.definition != null)
@@ -361,11 +371,26 @@ fun ShowCard(
     }
 }
 
+data class MainCardType(
+    val word: String,
+    val save: String//should contain "Save" word
+)
+
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter", "SuspiciousIndentation")
 @Composable
-fun Card(item: String, color: Color, centerText: Boolean = false, cardType: String = "") {
-    Log.e("Log","Card")
+fun Card(
+    item: String,
+    color: Color,
+    centerText: Boolean = false,
+    cardType: String = "",
+    mainScreenViewModel: MainScreenViewModel = koinViewModel(),
+    savable: Boolean = false,
+    completedResult: CompletedResult? = null
+) {
+    Log.e("Log", "Card")
+    val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
     var sentence: String? by remember { mutableStateOf(null) }
+    val mainViewModel: MainViewModel = getViewModel()
     if (sentence != null)
         WindowAboveCard(
             word = sentence!!
@@ -385,8 +410,26 @@ fun Card(item: String, color: Color, centerText: Boolean = false, cardType: Stri
             .padding(start = 20.dp, end = 10.dp)
     ) {
         Column {
-            if (cardType != "")
-                Text(text = cardType, color = OwnTheme.colors.primaryText)
+            Row {
+                if (cardType != "") {
+                    Text(text = cardType, color = OwnTheme.colors.primaryText)
+                }
+                if (savable) Text(text = "Save",
+                    color = OwnTheme.colors.primaryText,
+                    modifier = Modifier
+                        .clickable {
+                            if (completedResult != null) {
+                                scope.launch {
+                                    val localModeldb: Modeldb = Modeldb()
+                                    localModeldb.definitions = completedResult.definition ?: listOf()
+                                    localModeldb.examples = completedResult.instance ?: listOf()
+                                    localModeldb.word = completedResult.word ?: ""
+                                    localModeldb.linkToSound = completedResult.urlToListening ?: ""
+                                    mainViewModel.insert(localModeldb)
+                                }
+                            }
+                        })
+            }
             val text = AnnotatedString(item)
             ClickableText(
                 text = text,
@@ -420,8 +463,8 @@ fun Card(item: String, color: Color, centerText: Boolean = false, cardType: Stri
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun WindowAboveCard(word: String?) {
-    Log.e("Log","WindowAboveCard")
+fun WindowAboveCard(word: String?, mainScreenViewModel: MainScreenViewModel = koinViewModel()) {
+    Log.e("Log", "WindowAboveCard")
     var wordInstance: String? by remember { mutableStateOf(word) }
     var visible by remember { mutableStateOf(true) }
     val viewModel = get<MainViewModel>()
@@ -430,9 +473,11 @@ fun WindowAboveCard(word: String?) {
         wordInstance = word
     }
     if (word != null) {
+        Log.e("Log", "WindowAboveCard2")
         viewModel.getCompletedResult(word)
         val completedResult = viewModel.completedResult.collectAsState()
-        AnimatedVisibility(visible = visible){
+        AnimatedVisibility(visible = visible) {
+            Log.e("Log", "WindowAboveCard3")
             Column(
                 modifier = Modifier
                     .fillMaxHeight()
@@ -441,6 +486,7 @@ fun WindowAboveCard(word: String?) {
                         shape = OwnTheme.sizesShapes.smallShape
                     )
             ) {
+                Log.e("Log", "WindowAboveCard4")
                 Row(
                     modifier = Modifier
                         .fillMaxWidth(),
@@ -452,6 +498,7 @@ fun WindowAboveCard(word: String?) {
                         modifier = Modifier
                             .clickable {
                                 visible = false
+                                mainScreenViewModel.aboveCardState.value = null
                             }
                             .background(OwnTheme.colors.tintColor, shape = CircleShape)
                     )
@@ -466,7 +513,7 @@ fun WindowAboveCard(word: String?) {
                 } else {
                     if (completedResult.value != null) {
                         if (completedResult.value!!.isSuccess) {
-                            if(completedResult.value!!.word!=null){
+                            if (completedResult.value!!.word != null) {
                                 Card(
                                     item = "Word is ${completedResult.value!!.word}",
                                     color = OwnTheme.colors.green,

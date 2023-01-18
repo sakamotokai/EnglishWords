@@ -11,3 +11,18 @@ suspend fun getPost(
         @Path("Path") endPoint:String
 ):Response<MainEnglishModel>
 }
+/*
+
+interface ApiModel{
+    @GET("{Path}")
+    suspend fun getPost(
+        @Path("Path") endPoint: String
+    )
+}
+
+interface RetrofitApiForTest {
+    @GET("{Path}")
+    suspend fun getPost(
+        @Path("Path") endPoint:String
+    ):Response<MainEnglishModel>
+}*/
