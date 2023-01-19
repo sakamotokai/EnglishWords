@@ -9,6 +9,7 @@ import com.example.englishwords.retrofit.RetrofitInstance
 import com.example.englishwords.screens.mainScreen.MainScreenViewModel
 import com.example.englishwords.screens.settingsScreen.SettingsViewModel
 import com.example.englishwords.screens.wordKeepedScreen.WordKeepedViewModel
+import com.example.englishwords.viewModels.DrawerViewModel
 import com.example.englishwords.viewModels.GlobalSettingsViewModel
 import com.example.englishwords.viewModels.MainViewModel
 import org.koin.androidx.viewmodel.dsl.viewModel
@@ -44,6 +45,9 @@ var viewModelsModule = module{
     /*viewModel{
         GlobalSettingsViewModel(get(parameters = { parametersOf(SharedPreferencesEnum.settings.route) }))
     }*/
+    single {
+        DrawerViewModel()
+    }
     viewModelOf(::SettingsViewModel)
     single{
         GlobalSettingsViewModel(get())

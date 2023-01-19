@@ -1,8 +1,11 @@
 package com.example.englishwords.screens.wordKeepedScreen
 
+import android.util.Log
 import androidx.compose.animation.core.animateIntAsState
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.material3.LocalTextStyle
@@ -14,35 +17,90 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.example.englishwords.db.room.Modeldb
-import com.example.englishwords.screens.Card
+import com.example.englishwords.screens.MainCard
 import com.example.englishwords.ui.theme.ownTheme.OwnTheme
 import com.example.englishwords.viewModels.MainViewModel
+import kotlinx.coroutines.*
+import org.koin.androidx.compose.get
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
-fun WordKeepedScreen(){
-    Column(
-        Modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())) {
-        val mainViewModel: MainViewModel = koinViewModel()
-        mainViewModel.deleteEmptyWordFromRoom()
-        mainViewModel.getAllFromRoom()
-        val allRoomWords = mainViewModel.getAllRoomData.collectAsState()
-        allRoomWords.value?.forEach {item->
-            Card(item = item.word, color = OwnTheme.colors.blue, centerText = true)
+fun WordKeepedScreen() {
+    val mainViewModel: MainViewModel = get()
+    mainViewModel.deleteEmptyWordFromRoom()
+    mainViewModel.getAllFromRoom()
+    var allRoomWords = mainViewModel.getAllRoomData.collectAsState()
+    val rangeForHandling = 20//range must be no huge or i think logic can crash
+    LazyColumn(Modifier.fillMaxSize()) {
+        item {
+            Spacer(modifier = Modifier.height(20.dp))
         }
-        allRoomWords.value?.forEach {item->
-            Card(item = item.word, color = OwnTheme.colors.blue)
-        }
-        allRoomWords.value?.forEach {item->
-            Card(item = item.word, color = OwnTheme.colors.blue)
-        }
-        allRoomWords.value?.forEach {item->
-            Card(item = item.word, color = OwnTheme.colors.blue)
+        val scope = CoroutineScope(SupervisorJob())
+        if (allRoomWords.value != null) {
+                var startList = 0
+                var endList = rangeForHandling-1
+                repeat(allRoomWords.value!!.size / rangeForHandling) {
+                    Log.e("Log", "Redefine")
+                    scope.launch(Dispatchers.Default) {
+                        for (i in startList..endList) {
+                            item {
+                                val item = allRoomWords.value!![i]
+                                MainCard(
+                                    item = item.word,
+                                    color = OwnTheme.colors.blue,
+                                    centerText = true
+                                )
+                            }
+                        }
+                        startList += rangeForHandling
+                        endList += rangeForHandling
+                    }
+                }
+            scope.launch {
+                startList =
+                    if (allRoomWords.value!!.size > rangeForHandling-1) allRoomWords.value!!.size - endList + rangeForHandling else 0
+                endList = allRoomWords.value!!.size - 1
+                if (endList - startList > 0 && endList < allRoomWords.value!!.size)
+                    scope.launch(Dispatchers.Default) {
+                        for (i in startList..endList) {
+                            item {
+                                val item = allRoomWords.value!![i]
+                                MainCard(
+                                    item = item.word,
+                                    color = OwnTheme.colors.blue,
+                                    centerText = true
+                                )
+                            }
+                        }
+                    }
+            }
+            }
         }
     }
-}
+
+/*Column(
+    Modifier
+        .fillMaxSize()
+        .verticalScroll(rememberScrollState())
+) {
+    val mainViewModel: MainViewModel = koinViewModel()
+    mainViewModel.deleteEmptyWordFromRoom()
+    mainViewModel.getAllFromRoom()
+    val allRoomWords = mainViewModel.getAllRoomData.collectAsState()
+    val scope = rememberCoroutineScope()
+    allRoomWords.value?.forEach { item ->
+        MainCard(item = item.word, color = OwnTheme.colors.blue, centerText = true)
+    }
+    allRoomWords.value?.forEach { item ->
+        MainCard(item = item.word, color = OwnTheme.colors.blue)
+    }
+    allRoomWords.value?.forEach { item ->
+        MainCard(item = item.word, color = OwnTheme.colors.blue)
+    }
+    allRoomWords.value?.forEach { item ->
+        MainCard(item = item.word, color = OwnTheme.colors.blue)
+    }
+}*/
 
 @Composable
 fun WordKeepedCard(
@@ -50,9 +108,9 @@ fun WordKeepedCard(
     color: androidx.compose.ui.graphics.Color,
     centerText: Boolean = false,
     cardType: String = "",
-){
-    var extentCardSize by remember{ mutableStateOf(false) }
-    val dunamicPadding = animateIntAsState(targetValue = if(extentCardSize) 90 else 30)
+) {
+    var extentCardSize by remember { mutableStateOf(false) }
+    val dunamicPadding = animateIntAsState(targetValue = if (extentCardSize) 90 else 30)
     Box(
         modifier = Modifier
             .fillMaxWidth()

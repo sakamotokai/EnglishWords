@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.ScaffoldState
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.Text
@@ -12,14 +13,19 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import com.example.englishwords.navigation.Screen
 import com.example.englishwords.ui.theme.ownTheme.OwnTheme
+import com.example.englishwords.viewModels.DrawerViewModel
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
+import org.koin.androidx.compose.get
 
 //@SuppressLint("UnusedMaterialScaffoldPaddingParameter")
 @Composable
-fun MainDrawerMenu(navController: NavHostController) {
+fun MainDrawerMenu(navController: NavHostController,scaffoldState: ScaffoldState,scope: CoroutineScope) {
     Column(
         Modifier
             .fillMaxSize()
@@ -27,14 +33,14 @@ fun MainDrawerMenu(navController: NavHostController) {
             .padding(start = 10.dp, top = 48.dp, end = 10.dp),
     ) {
         DrawerItems().screensItem.forEach {
-            DrawerCard(item = it, navController)
+            DrawerCard(item = it, navController,scaffoldState,scope)
             Spacer(modifier = Modifier.height(10.dp))
         }
     }
 }
 
 @Composable
-fun DrawerCard(item: Screen, navController: NavHostController) {
+fun DrawerCard(item: Screen, navController: NavHostController,scaffoldState: ScaffoldState,scope: CoroutineScope) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -48,11 +54,14 @@ fun DrawerCard(item: Screen, navController: NavHostController) {
                 shape = OwnTheme.sizesShapes.largeShape
             )
             .clickable {
-                navController.navigate(item.route){
-                    popUpTo(Screen.MainScreen.route){
+                navController.navigate(item.route) {
+                    popUpTo(Screen.MainScreen.route) {
                         //inclusive = true
                     }
                     launchSingleTop = true
+                }
+                scope.launch{
+                    scaffoldState.drawerState.close()
                 }
             }
     ) {
