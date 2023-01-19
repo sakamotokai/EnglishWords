@@ -8,4 +8,6 @@ interface RoomRepositoryInterface {
     suspend fun delete(modeldb: Modeldb)
     suspend fun update(modeldb: Modeldb)
     suspend fun getAll(): Flow<List<Modeldb>>
+    suspend fun deleteEmptyWord()
+    suspend fun getGoalWord(goalWord:String):String
 }

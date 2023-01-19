@@ -1,9 +1,7 @@
 package com.example.englishwords.screens.wordKeepedScreen
 
 import androidx.compose.animation.core.animateIntAsState
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.CornerSize
@@ -15,11 +13,35 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.example.englishwords.db.room.Modeldb
+import com.example.englishwords.screens.Card
 import com.example.englishwords.ui.theme.ownTheme.OwnTheme
+import com.example.englishwords.viewModels.MainViewModel
+import org.koin.androidx.compose.koinViewModel
 
 @Composable
 fun WordKeepedScreen(){
-
+    Column(
+        Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())) {
+        val mainViewModel: MainViewModel = koinViewModel()
+        mainViewModel.deleteEmptyWordFromRoom()
+        mainViewModel.getAllFromRoom()
+        val allRoomWords = mainViewModel.getAllRoomData.collectAsState()
+        allRoomWords.value?.forEach {item->
+            Card(item = item.word, color = OwnTheme.colors.blue, centerText = true)
+        }
+        allRoomWords.value?.forEach {item->
+            Card(item = item.word, color = OwnTheme.colors.blue)
+        }
+        allRoomWords.value?.forEach {item->
+            Card(item = item.word, color = OwnTheme.colors.blue)
+        }
+        allRoomWords.value?.forEach {item->
+            Card(item = item.word, color = OwnTheme.colors.blue)
+        }
+    }
 }
 
 @Composable

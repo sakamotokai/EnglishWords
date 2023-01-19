@@ -1,5 +1,6 @@
 package com.example.englishwords.viewModels
 
+import android.util.Log
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -22,6 +23,10 @@ class MainViewModel(
 ) :
     ViewModel() {
 
+    init {
+        Log.e("Log","---------------------------------------------------------")
+    }
+
     var loading = mutableStateOf(false)
 
     private var _getAllRoomData:MutableStateFlow<List<Modeldb>?> = MutableStateFlow(null)
@@ -29,6 +34,9 @@ class MainViewModel(
 
     private var _completedResult:MutableStateFlow<CompletedResult?> = MutableStateFlow(null)
     var completedResult:StateFlow<CompletedResult?> = _completedResult
+
+    private var _goalWord:MutableStateFlow<String?> = MutableStateFlow(null)
+    var goalWord:StateFlow<String?> = _goalWord
 
     fun getCompletedResult(endPoint: String) {
         viewModelScope.launch {
@@ -70,28 +78,40 @@ class MainViewModel(
         }
     }
     fun insert(modeldb: Modeldb){
-        viewModelScope.launch {
+        viewModelScope.launch (Dispatchers.Default){
             repository.insert(modeldb)
         }
     }
 
     fun update(modeldb: Modeldb){
-        viewModelScope.launch{
+        viewModelScope.launch(Dispatchers.Default){
             repository.update(modeldb)
         }
     }
 
     fun delete(modeldb:Modeldb){
-        viewModelScope.launch{
+        viewModelScope.launch(Dispatchers.Default){
             repository.delete(modeldb)
         }
     }
 
     fun getAllFromRoom(){
-        viewModelScope.launch{
+        viewModelScope.launch(Dispatchers.Default){
             repository.getAll().collect{
                 _getAllRoomData.value = it
             }
+        }
+    }
+
+    fun deleteEmptyWordFromRoom(){
+        viewModelScope.launch(Dispatchers.Default) {
+            repository.deleteEmptyWord()
+        }
+    }
+
+    fun getGoalWord(goalWord:String){
+        viewModelScope.launch(Dispatchers.Default){
+            _goalWord.value = repository.getGoalWord(goalWord)
         }
     }
 }

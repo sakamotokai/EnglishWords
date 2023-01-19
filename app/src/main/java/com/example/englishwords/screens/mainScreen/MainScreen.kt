@@ -51,7 +51,7 @@ import org.koin.core.parameter.parametersOf
     "UnusedMaterial3ScaffoldPaddingParameter", "CommitPrefEdits",
     "UnrememberedMutableState"
 )
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalAnimationApi::class)
+@OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun MainScreen() {
     Log.e("Log", "MainScreen")
@@ -257,8 +257,10 @@ class ColorListImpl : ColorListInterface {
 }
 
 @Composable
-fun TopBar(isDarkmode: MutableState<Boolean>) {
-    val globalSettingsViewModel: GlobalSettingsViewModel = koinViewModel()
+fun TopBar(
+    isDarkmode: MutableState<Boolean>,
+    globalSettingsViewModel: GlobalSettingsViewModel = get()
+) {
     val colorList = ColorListImpl().colorList
     colorList.forEach { style ->
         FloatingActionButton(
@@ -356,7 +358,8 @@ fun ShowCard(
                         color = OwnTheme.colors.green,
                         centerText = true,
                         savable = true,
-                        completedResult = completedResult
+                        completedResult = completedResult,
+                        wordCard = true
                     )
                 }
                 if (completedResult.definition != null)
@@ -383,14 +386,23 @@ fun Card(
     color: Color,
     centerText: Boolean = false,
     cardType: String = "",
-    mainScreenViewModel: MainScreenViewModel = koinViewModel(),
     savable: Boolean = false,
-    completedResult: CompletedResult? = null
+    completedResult: CompletedResult? = null,
+    wordCard: Boolean = false
 ) {
+    val mainViewModel: MainViewModel = getViewModel()
+    var word: List<String> = listOf()
+    if (wordCard) {
+        word = item.split(" ")
+        Log.e("Log", word[2])
+        mainViewModel.getGoalWord(word[2])
+    }
     Log.e("Log", "Card")
     val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
     var sentence: String? by remember { mutableStateOf(null) }
-    val mainViewModel: MainViewModel = getViewModel()
+    var goalWord = mainViewModel.goalWord.collectAsState()
+
+    Log.e("Log", "---------${goalWord.value}--------")
     if (sentence != null)
         WindowAboveCard(
             word = sentence!!
@@ -410,51 +422,55 @@ fun Card(
             .padding(start = 20.dp, end = 10.dp)
     ) {
         Column {
-            Row {
-                if (cardType != "") {
-                    Text(text = cardType, color = OwnTheme.colors.primaryText)
-                }
-                if (savable) Text(text = "Save",
-                    color = OwnTheme.colors.primaryText,
-                    modifier = Modifier
-                        .clickable {
-                            if (completedResult != null) {
-                                scope.launch {
-                                    val localModeldb: Modeldb = Modeldb()
-                                    localModeldb.definitions = completedResult.definition ?: listOf()
-                                    localModeldb.examples = completedResult.instance ?: listOf()
-                                    localModeldb.word = completedResult.word ?: ""
-                                    localModeldb.linkToSound = completedResult.urlToListening ?: ""
-                                    mainViewModel.insert(localModeldb)
-                                }
-                            }
-                        })
-            }
+            if (cardType != "") {
+                Text(text = cardType, color = OwnTheme.colors.primaryText)
+            }//TODO("Make no visible save word when touch word is contained in room db")
             val text = AnnotatedString(item)
-            ClickableText(
-                text = text,
-                onClick = { offset ->
-                    val words = text.split(" ")
-                    var cursor = 0
-                    for (word in words) {
-                        cursor += word.length
-                        if (offset <= cursor) {
-                            sentence = word
-                            break
+            Row(Modifier.fillMaxWidth()) {
+                if(completedResult?.word != null)
+                    if (savable && goalWord.value == "") Text(text = "Save",
+                        color = OwnTheme.colors.primaryText,
+                        modifier = Modifier
+                            .clickable {
+                                if (completedResult.word.isNotEmpty()) {
+                                    scope.launch {
+                                        val localModeldb: Modeldb = Modeldb()
+                                        localModeldb.definitions =
+                                            completedResult.definition ?: listOf("No Data")
+                                        localModeldb.examples =
+                                            completedResult.instance ?: listOf("No Data")
+                                        localModeldb.linkToSound =
+                                            completedResult.urlToListening ?: ""
+                                        localModeldb.word = completedResult.word
+                                        mainViewModel.insert(localModeldb)
+                                    }
+                                }
+                            })
+                ClickableText(
+                    text = text,
+                    onClick = { offset ->
+                        val words = text.split(" ")
+                        var cursor = 0
+                        for (word in words) {
+                            cursor += word.length
+                            if (offset <= cursor) {
+                                sentence = word
+                                break
+                            }
+                            cursor++
                         }
-                        cursor++
-                    }
-                },
-                modifier = Modifier.fillMaxWidth(),
-                style =
-                if (centerText)
-                    LocalTextStyle.current.copy(
-                        textAlign = TextAlign.Center,
-                        color = OwnTheme.colors.primaryText
-                    )
-                else
-                    LocalTextStyle.current.copy(color = OwnTheme.colors.primaryText)
-            )
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    style =
+                    if (centerText)
+                        LocalTextStyle.current.copy(
+                            textAlign = TextAlign.Center,
+                            color = OwnTheme.colors.primaryText
+                        )
+                    else
+                        LocalTextStyle.current.copy(color = OwnTheme.colors.primaryText)
+                )
+            }
 
         }
     }
@@ -517,7 +533,10 @@ fun WindowAboveCard(word: String?, mainScreenViewModel: MainScreenViewModel = ko
                                 Card(
                                     item = "Word is ${completedResult.value!!.word}",
                                     color = OwnTheme.colors.green,
-                                    centerText = true
+                                    centerText = true,
+                                    wordCard = true,
+                                    savable = true,
+                                    completedResult = completedResult.value
                                 )
                             }
                             if (completedResult.value!!.definition != null)

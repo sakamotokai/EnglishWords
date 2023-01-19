@@ -17,4 +17,6 @@ interface Daodb {
     suspend fun update(modeldb: Modeldb)
     @Query("SELECT*FROM wordKeeper")
     fun getAll(): Flow<List<Modeldb>>
+    @Query("SELECT*FROM wordKeeper WHERE word LIKE :wordInstance")
+    fun getGoalWord(wordInstance:String):List<Modeldb>
 }

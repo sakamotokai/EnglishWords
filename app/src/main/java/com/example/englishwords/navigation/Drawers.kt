@@ -27,14 +27,14 @@ fun MainDrawerMenu(navController: NavHostController) {
             .padding(start = 10.dp, top = 48.dp, end = 10.dp),
     ) {
         DrawerItems().screensItem.forEach {
-            DrawerCard(item = it,navController)
+            DrawerCard(item = it, navController)
             Spacer(modifier = Modifier.height(10.dp))
         }
     }
 }
 
 @Composable
-fun DrawerCard(item: Screen,navController: NavHostController) {
+fun DrawerCard(item: Screen, navController: NavHostController) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -46,14 +46,14 @@ fun DrawerCard(item: Screen,navController: NavHostController) {
                 1.dp,
                 color = OwnTheme.colors.tintColor,
                 shape = OwnTheme.sizesShapes.largeShape
-            ).clickable {
-                navController.navigate(item.route)/*{
-                    popUpTo(navController.graph.findStartDestination().id) {
-                        saveState = true
+            )
+            .clickable {
+                navController.navigate(item.route){
+                    popUpTo(Screen.MainScreen.route){
+                        //inclusive = true
                     }
                     launchSingleTop = true
-                    restoreState = true
-                }*/
+                }
             }
     ) {
         Row(
@@ -76,9 +76,10 @@ fun DrawerCard(item: Screen,navController: NavHostController) {
 
 class DrawerItems : DrawerItemsInterface {
     override val screensItem: List<Screen> = listOf(
-            Screen.MainScreen,
-            Screen.WordKeeped
-        )
+        Screen.MainScreen,
+        Screen.WordKeeped,
+        Screen.SettingsScreen
+    )
 }
 
 interface DrawerItemsInterface {
