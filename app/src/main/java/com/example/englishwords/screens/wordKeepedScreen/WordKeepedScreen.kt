@@ -37,28 +37,29 @@ fun WordKeepedScreen() {
         }
         val scope = CoroutineScope(SupervisorJob())
         if (allRoomWords.value != null) {
-                var startList = 0
-                var endList = rangeForHandling-1
-                repeat(allRoomWords.value!!.size / rangeForHandling) {
-                    Log.e("Log", "Redefine")
-                    scope.launch(Dispatchers.Default) {
-                        for (i in startList..endList) {
-                            item {
-                                val item = allRoomWords.value!![i]
-                                MainCard(
-                                    item = item.word,
-                                    color = OwnTheme.colors.blue,
-                                    centerText = true
-                                )
-                            }
+            var startList = 0
+            var endList = rangeForHandling - 1
+            repeat(allRoomWords.value!!.size / rangeForHandling) {
+                Log.e("Log", "Redefine")
+                scope.launch(Dispatchers.Default) {
+                    for (i in startList..endList) {
+                        item {
+                            val item = allRoomWords.value!![i]
+                            MainCard(
+                                item = item.word,
+                                color = OwnTheme.colors.blue,
+                                centerText = true,
+                                swipeToDelete = true
+                            )
                         }
-                        startList += rangeForHandling
-                        endList += rangeForHandling
                     }
+                    startList += rangeForHandling
+                    endList += rangeForHandling
                 }
+            }
             scope.launch {
                 startList =
-                    if (allRoomWords.value!!.size > rangeForHandling-1) allRoomWords.value!!.size - endList + rangeForHandling else 0
+                    if (allRoomWords.value!!.size > rangeForHandling - 1) allRoomWords.value!!.size - endList + rangeForHandling else 0
                 endList = allRoomWords.value!!.size - 1
                 if (endList - startList > 0 && endList < allRoomWords.value!!.size)
                     scope.launch(Dispatchers.Default) {
@@ -68,39 +69,16 @@ fun WordKeepedScreen() {
                                 MainCard(
                                     item = item.word,
                                     color = OwnTheme.colors.blue,
-                                    centerText = true
+                                    centerText = true,
+                                    swipeToDelete = true
                                 )
                             }
                         }
                     }
             }
-            }
         }
     }
-
-/*Column(
-    Modifier
-        .fillMaxSize()
-        .verticalScroll(rememberScrollState())
-) {
-    val mainViewModel: MainViewModel = koinViewModel()
-    mainViewModel.deleteEmptyWordFromRoom()
-    mainViewModel.getAllFromRoom()
-    val allRoomWords = mainViewModel.getAllRoomData.collectAsState()
-    val scope = rememberCoroutineScope()
-    allRoomWords.value?.forEach { item ->
-        MainCard(item = item.word, color = OwnTheme.colors.blue, centerText = true)
-    }
-    allRoomWords.value?.forEach { item ->
-        MainCard(item = item.word, color = OwnTheme.colors.blue)
-    }
-    allRoomWords.value?.forEach { item ->
-        MainCard(item = item.word, color = OwnTheme.colors.blue)
-    }
-    allRoomWords.value?.forEach { item ->
-        MainCard(item = item.word, color = OwnTheme.colors.blue)
-    }
-}*/
+}
 
 @Composable
 fun WordKeepedCard(

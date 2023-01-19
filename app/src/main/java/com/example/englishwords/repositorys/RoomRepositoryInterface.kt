@@ -10,4 +10,5 @@ interface RoomRepositoryInterface {
     suspend fun getAll(): Flow<List<Modeldb>>
     suspend fun deleteEmptyWord()
     suspend fun getGoalWord(goalWord:String):String
+    suspend fun deleteByName(name:String)
 }

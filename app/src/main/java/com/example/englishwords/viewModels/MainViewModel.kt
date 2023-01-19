@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.englishwords.db.room.Modeldb
 import com.example.englishwords.models.retrofitModels.CompletedResult
 import com.example.englishwords.repositorys.Repository
@@ -112,6 +113,12 @@ class MainViewModel(
     fun getGoalWord(goalWord:String){
         viewModelScope.launch(Dispatchers.Default){
             _goalWord.value = repository.getGoalWord(goalWord)
+        }
+    }
+
+    fun deleteByName(name:String){
+        viewModelScope.launch(Dispatchers.Default) {
+            repository.deleteByName(name)
         }
     }
 }

@@ -19,4 +19,6 @@ interface Daodb {
     fun getAll(): Flow<List<Modeldb>>
     @Query("SELECT*FROM wordKeeper WHERE word LIKE :wordInstance")
     fun getGoalWord(wordInstance:String):List<Modeldb>
+    @Query("DELETE FROM wordKeeper WHERE word LIKE :name")
+    fun deleteByName(name:String)
 }

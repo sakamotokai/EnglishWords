@@ -45,6 +45,10 @@ class Repository(val retrofitInstance: RetrofitInstance, val dao: Daodb) :
         return if (dao.getGoalWord(goalWord).isEmpty()) "" else goalWord
     }
 
+    override suspend fun deleteByName(name: String) {
+        dao.deleteByName(name)
+    }
+
     val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
     fun insertOwn(modeldb: Modeldb) {

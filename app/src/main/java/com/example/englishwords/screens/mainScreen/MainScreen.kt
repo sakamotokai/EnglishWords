@@ -9,6 +9,9 @@ import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.gestures.horizontalDrag
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -16,19 +19,27 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.ClickableText
+import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Build
 import androidx.compose.material.icons.filled.Call
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.swipeable
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.composed
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.consumePositionChange
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.input.pointer.positionChange
+import androidx.compose.ui.input.pointer.util.VelocityTracker
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.room.Dao
 import com.example.englishwords.SharedPreferencesEnum
@@ -41,14 +52,13 @@ import com.example.englishwords.screens.mainScreen.MainScreenViewModel
 import com.example.englishwords.ui.theme.ownTheme.OwnTheme
 import com.example.englishwords.viewModels.GlobalSettingsViewModel
 import com.example.englishwords.viewModels.MainViewModel
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import org.koin.androidx.compose.get
 import org.koin.androidx.compose.getViewModel
 import org.koin.androidx.compose.koinViewModel
 import org.koin.core.parameter.parametersOf
+import kotlin.math.absoluteValue
+import kotlin.math.roundToInt
 
 @SuppressLint(
     "UnusedMaterial3ScaffoldPaddingParameter", "CommitPrefEdits",
@@ -345,6 +355,7 @@ fun SearchBar(
 fun ShowCard(
     completedResult: CompletedResult?
 ) {
+    val mainViewModel: MainViewModel = get()
     Log.e("Log", "ShowCard")
     LazyColumn(
         modifier = Modifier
@@ -386,7 +397,8 @@ fun MainCard(
     cardType: String = "",
     savable: Boolean = false,
     completedResult: CompletedResult? = null,
-    wordCard: Boolean = false
+    wordCard: Boolean = false,
+    swipeToDelete: Boolean = false
 ) {
     val mainViewModel: MainViewModel = getViewModel()
     val mainScreenViewModel: MainScreenViewModel = koinViewModel()
@@ -426,8 +438,8 @@ fun MainCard(
         Column {
             if (cardType != "") {
                 Text(text = cardType, color = OwnTheme.colors.primaryText)
-            }//TODO("Make no visible save word when touch word is contained in room db")
-            var localText by remember{ mutableStateOf("Save") }
+            }
+            var localText by remember { mutableStateOf("Save") }
             val text = AnnotatedString(item)
             Row(Modifier.fillMaxWidth()) {
                 if (completedResult?.word != null)
@@ -450,6 +462,12 @@ fun MainCard(
                                     }
                                 }
                             })
+                if (swipeToDelete) Text(text = "delete",
+                    color = OwnTheme.colors.primaryText,
+                    modifier = Modifier
+                        .clickable {
+                            mainViewModel.deleteByName(item)
+                        })
                 ClickableText(
                     text = text,
                     onClick = { offset ->
@@ -571,6 +589,7 @@ fun AboveCard(
                     else
                         LocalTextStyle.current.copy(color = OwnTheme.colors.primaryText)
                 )
+
             }
 
         }
@@ -666,4 +685,63 @@ fun WindowAboveCard(word: String?, mainScreenViewModel: MainScreenViewModel = ko
             }
         }
     }
+}
+
+private fun Modifier.swipeToDismiss(
+    onDismissed: () -> Unit
+): Modifier = composed {
+    // This Animatable stores the horizontal offset for the element.
+    val offsetX = remember { Animatable(0f) }
+    pointerInput(Unit) {
+        // Used to calculate a settling position of a fling animation.
+        val decay = splineBasedDecay<Float>(this)
+        // Wrap in a coroutine scope to use suspend functions for touch events and animation.
+        coroutineScope {
+            while (true) {
+                // Wait for a touch down event.
+                val pointerId = awaitPointerEventScope { awaitFirstDown().id }
+                // Interrupt any ongoing animation.
+                offsetX.stop()
+                // Prepare for drag events and record velocity of a fling.
+                val velocityTracker = VelocityTracker()
+                // Wait for drag events.
+                awaitPointerEventScope {
+                    horizontalDrag(pointerId) { change ->
+                        // Record the position after offset
+                        val horizontalDragOffset = offsetX.value + change.positionChange().x
+                        launch {
+                            // Overwrite the Animatable value while the element is dragged.
+                            offsetX.snapTo(horizontalDragOffset)
+                        }
+                        // Record the velocity of the drag.
+                        velocityTracker.addPosition(change.uptimeMillis, change.position)
+                        // Consume the gesture event, not passed to external
+                        change.consumePositionChange()
+                    }
+                }
+                // Dragging finished. Calculate the velocity of the fling.
+                val velocity = velocityTracker.calculateVelocity().x
+                // Calculate where the element eventually settles after the fling animation.
+                val targetOffsetX = decay.calculateTargetValue(offsetX.value, velocity)
+                // The animation should end as soon as it reaches these bounds.
+                offsetX.updateBounds(
+                    lowerBound = -size.width.toFloat(),
+                    upperBound = size.width.toFloat()
+                )
+                launch {
+                    if (targetOffsetX.absoluteValue <= size.width) {
+                        // Not enough velocity; Slide back to the default position.
+                        offsetX.animateTo(targetValue = 0f, initialVelocity = velocity)
+                    } else {
+                        // Enough velocity to slide away the element to the edge.
+                        offsetX.animateDecay(velocity, decay)
+                        // The element was swiped away.
+                        onDismissed()
+                    }
+                }
+            }
+        }
+    }
+        // Apply the horizontal offset to the element.
+        .offset { IntOffset(offsetX.value.roundToInt(), 0) }
 }
