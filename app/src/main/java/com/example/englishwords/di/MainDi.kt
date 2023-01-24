@@ -9,6 +9,7 @@ import com.example.englishwords.retrofit.RetrofitInstance
 import com.example.englishwords.screens.mainScreen.MainScreenViewModel
 import com.example.englishwords.screens.settingsScreen.SettingsViewModel
 import com.example.englishwords.screens.wordKeepedScreen.WordKeepedViewModel
+import com.example.englishwords.ui.theme.ownTheme.CustomColor
 import com.example.englishwords.viewModels.DrawerViewModel
 import com.example.englishwords.viewModels.GlobalSettingsViewModel
 import com.example.englishwords.viewModels.MainViewModel
@@ -29,6 +30,12 @@ var mainDi = module {
     singleOf(::SettingsSharedPreferences)
 }
 
+var otherModule = module {
+    single{
+        CustomColor(get())
+    }
+}
+
 var databaseModule = module{
     single{
         Database.getInstance(get()).getDao()
@@ -44,7 +51,7 @@ var viewModelsModule = module{
     single {
         DrawerViewModel()
     }
-    viewModelOf(::SettingsViewModel)
+    single{SettingsViewModel(get())}
     single{
         GlobalSettingsViewModel(get())
     }

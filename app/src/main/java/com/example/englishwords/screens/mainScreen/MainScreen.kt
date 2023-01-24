@@ -110,22 +110,12 @@ fun MainScreen() {
         transitionSpec = { fadeIn() with fadeOut() }
     ) {
         Column(modifier = Modifier.background(color = OwnTheme.colors.primaryBackground)) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(
-                        OwnTheme.colors.secondaryBackground,
-                        shape = OwnTheme.sizesShapes.mediumShape
-                    ),
-                horizontalArrangement = Arrangement.End
-            ) {
-                TopBar(isDarkmode = isDarkmode)
-            }
-            Spacer(modifier = Modifier.height(10.dp))
+            Spacer(modifier = Modifier.height(OwnTheme.dp.bigDp))
             SearchBar(
                 endPoint = endPoint,
                 returnEndPoint = { endPoint = it },
                 moveButton = { moveButton = it })
+            Spacer(Modifier.height(OwnTheme.dp.normalDp))
             AnimatedContent(
                 targetState = moveButton,
                 transitionSpec = {
@@ -251,61 +241,6 @@ fun ColumnOfContent(
                 textAlign = TextAlign.Center,
             )
         }
-    }
-}
-
-interface ColorListInterface {
-    var colorList: List<OwnTheme.OwnStyle>
-}
-
-class ColorListImpl : ColorListInterface {
-    override var colorList: List<OwnTheme.OwnStyle> =
-        listOf<OwnTheme.OwnStyle>(
-            OwnTheme.OwnStyle.Black,
-            OwnTheme.OwnStyle.Green,
-            OwnTheme.OwnStyle.Blue,
-            OwnTheme.OwnStyle.Red,
-            OwnTheme.OwnStyle.Purple
-        )
-}
-
-@Composable
-fun TopBar(
-    isDarkmode: MutableState<Boolean>,
-    globalSettingsViewModel: GlobalSettingsViewModel = get()
-) {
-    val colorList = ColorListImpl().colorList
-    colorList.forEach { style ->
-        FloatingActionButton(
-            onClick = { globalSettingsViewModel.changeOwnStyle(style) },
-            modifier = Modifier
-                .border(1.dp, color = OwnTheme.colors.primaryText, shape = CircleShape)
-                .size(40.dp),
-            containerColor = when (style.name) {
-                "Purple" -> OwnTheme.colors.purple
-                "Blue" -> OwnTheme.colors.blue
-                "Red" -> OwnTheme.colors.red
-                "Green" -> OwnTheme.colors.green
-                "Black" -> OwnTheme.colors.black
-                else -> OwnTheme.colors.purple
-            },
-            shape = CircleShape,
-        ) {}
-        Spacer(modifier = Modifier.width(4.dp))
-    }
-    Log.e("Log", "TopBar")
-    IconButton(
-        onClick = {
-            globalSettingsViewModel.changeDarkMode()
-            isDarkmode.value = !isDarkmode.value
-        },
-        Modifier.height(40.dp)
-    ) {
-        Icon(
-            if (isDarkmode.value) Icons.Filled.Build else Icons.Filled.Call,
-            null,
-            tint = OwnTheme.colors.primaryText
-        )
     }
 }
 

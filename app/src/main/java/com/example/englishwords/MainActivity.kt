@@ -31,7 +31,7 @@ class MainActivity : ComponentActivity() {
             val scope = rememberCoroutineScope()
             OwnTheme(
                 darkTheme = isDarkmode.value,
-                style = style.value
+                style = OwnTheme.OwnStyle.Custom/*style.value*/
             ) {
                 val navController = rememberNavController()
                 androidx.compose.material.Scaffold(

@@ -2,6 +2,8 @@ package com.example.englishwords.ui.theme.ownTheme
 
 import androidx.compose.ui.graphics.Color
 import com.example.englishwords.models.preferencesModels.SettingsSharedPreferences
+import com.example.englishwords.screens.settingsScreen.SettingsViewModel
+import org.koin.java.KoinJavaComponent.inject
 
 val baseLightPalette = OwnColors(
     primaryText = Color(0xFF3D454C),
@@ -78,25 +80,29 @@ interface CustomColorInterface{
 }
 
 class CustomColor(settingsSharedPreferences:SettingsSharedPreferences):CustomColorInterface {
-    val sharedPreferences = settingsSharedPreferences.getPreferences()
+    private val settingsViewModel:SettingsViewModel by inject(SettingsViewModel::class.java)
     override var customPalette: OwnColors = OwnColors(
-    primaryText = Color(sharedPreferences.getLong("CustomThemePrimaryText",0xFF3D454C)),
-    primaryBackground = Color(sharedPreferences.getLong("CustomThemePrimaryBackground",0xFFFFFFFF)),
-    secondaryText= Color(sharedPreferences.getLong("CustomThemeSecondaryText",0xFF3D454C)),
-    secondaryBackground= Color(sharedPreferences.getLong("CustomThemeSecondaryBackground",0xFF3D454C)),
-    tintColor= Color(sharedPreferences.getLong("CustomThemeTintColor",0xFF3D454C)),
-    backgroundInBackground= Color(sharedPreferences.getLong("CustomThemeBackgroundInBackground",0xFF3D454C)),
-    purple= Color(sharedPreferences.getLong("CustomThemePurple",0xFF3D454C)),
-    red= Color(sharedPreferences.getLong("CustomThemeRed",0xFF3D454C)),
-    error= Color(sharedPreferences.getLong("CustomThemeError",0xFF3D454C)),
-    green= Color(sharedPreferences.getLong("CustomThemeGreen",0xFF3D454C)),
-    blue= Color(sharedPreferences.getLong("CustomThemeBlue",0xFF3D454C)),
-    black= Color(sharedPreferences.getLong("CustomThemeBlack",0xFF3D454C))
+    primaryText = Color(settingsViewModel.primaryTextDark.value),
+    primaryBackground = Color(settingsViewModel.primaryBackgroundDark.value),
+    secondaryText= Color(settingsViewModel.secondaryTextDark.value),
+    secondaryBackground= Color(settingsViewModel.secondaryBackgroundDark.value),
+    tintColor= Color(settingsViewModel.tintColorDark.value),
+    backgroundInBackground= Color(settingsViewModel.backgroundInBackgroundDark.value),
+    purple= Color(settingsViewModel.purpleDark.value),
+    red= Color(settingsViewModel.redDark.value),
+    error= Color(settingsViewModel.errorDark.value),
+    green= Color(settingsViewModel.greenDark.value),
+    blue= Color(settingsViewModel.blueDark.value),
+    black= Color(settingsViewModel.blackDark.value)
     )
 }
 
-val customLightPalette = baseLightPalette.copy(
+enum class CustomColorName{
+    CustomThemePrimaryText,CustomThemePrimaryBackground,CustomThemeSecondaryText,CustomThemeSecondaryBackground,
+    CustomThemeTintColor,CustomThemeBackgroundInBackground,CustomThemePurple,CustomThemeRed,CustomThemeError,
+    CustomThemeGreen,CustomThemeBlue,CustomThemeBlack
+}
 
-)
+//val customLightPalette = CustomColor().customPalette
 
 val customDarkPalette = baseDarkPalette

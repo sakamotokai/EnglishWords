@@ -2,18 +2,21 @@ package com.example.englishwords.ui.theme.ownTheme
 
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.LocalContentColor
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.collectAsState
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.englishwords.screens.settingsScreen.SettingsViewModel
 import com.example.englishwords.ui.theme.ownTheme.OwnTheme.LocalColors
 import com.example.englishwords.ui.theme.ownTheme.OwnTheme.LocalDp
 import com.example.englishwords.ui.theme.ownTheme.OwnTheme.LocalShape
 import com.example.englishwords.ui.theme.ownTheme.OwnTheme.LocalSizesShapes
 import com.example.englishwords.ui.theme.ownTheme.OwnTheme.LocalTypography
+import org.koin.androidx.compose.get
 
 @Composable
 fun OwnTheme(
@@ -34,8 +37,55 @@ fun OwnTheme(
 
     val dp = baseDp
 
-    val colors = when(darkTheme){
-        true->{
+    val settingsViewModel:SettingsViewModel = get()
+    val colors =
+        if(darkTheme) {
+            baseDarkPalette.copy(
+                tintColor = Color(settingsViewModel.tintColorDark.collectAsState().value),
+                //primaryBackground = Color(settingsViewModel.primaryBackgroundDark.collectAsState().value),
+                black = Color(settingsViewModel.blackDark.collectAsState().value),
+                blue = Color(settingsViewModel.blueDark.collectAsState().value),
+                //backgroundInBackground = Color(settingsViewModel.backgroundInBackgroundDark.collectAsState().value),
+                error = Color(settingsViewModel.errorDark.collectAsState().value),
+                green = Color(settingsViewModel.greenDark.collectAsState().value),
+                primaryText = Color(settingsViewModel.primaryTextDark.collectAsState().value),
+                purple = Color(settingsViewModel.purpleDark.collectAsState().value),
+                red = Color(settingsViewModel.redDark.collectAsState().value),
+                //secondaryBackground = Color(settingsViewModel.secondaryBackgroundDark.collectAsState().value),
+                secondaryText = Color(settingsViewModel.secondaryTextDark.collectAsState().value)
+            )
+        }else {
+            baseLightPalette.copy(
+                tintColor = Color(settingsViewModel.tintColor.collectAsState().value),
+                //primaryBackground = Color(settingsViewModel.primaryBackground.collectAsState().value),
+                black = Color(settingsViewModel.black.collectAsState().value),
+                blue = Color(settingsViewModel.blue.collectAsState().value),
+                //backgroundInBackground = Color(settingsViewModel.backgroundInBackground.collectAsState().value),
+                error = Color(settingsViewModel.error.collectAsState().value),
+                green = Color(settingsViewModel.green.collectAsState().value),
+                primaryText = Color(settingsViewModel.primaryText.collectAsState().value),
+                purple = Color(settingsViewModel.purple.collectAsState().value),
+                red = Color(settingsViewModel.red.collectAsState().value),
+                //secondaryBackground = Color(settingsViewModel.secondaryBackground.collectAsState().value),
+                secondaryText = Color(settingsViewModel.secondaryText.collectAsState().value)
+            )
+        }
+    /*get<CustomColor>().customPalette.copy(
+        tintColor = Color(settingsViewModel.tintColor.collectAsState().value),
+        primaryBackground = Color(settingsViewModel.primaryBackground.collectAsState().value),
+        black = Color(settingsViewModel.black.collectAsState().value),
+        blue = Color(settingsViewModel.blue.collectAsState().value),
+        backgroundInBackground = Color(settingsViewModel.backgroundInBackground.collectAsState().value),
+        error = Color(settingsViewModel.error.collectAsState().value),
+        green = Color(settingsViewModel.green.collectAsState().value),
+        primaryText = Color(settingsViewModel.primaryText.collectAsState().value),
+        purple = Color(settingsViewModel.purple.collectAsState().value),
+        red = Color(settingsViewModel.red.collectAsState().value),
+        secondaryBackground = Color(settingsViewModel.secondaryBackground.collectAsState().value),
+        secondaryText = Color(settingsViewModel.secondaryText.collectAsState().value)
+
+    )*///when(darkTheme){
+/*        true->{
             when(style){
                 OwnTheme.OwnStyle.Purple-> purpleDarkPalette
                 OwnTheme.OwnStyle.Blue-> blueDarkPalette
@@ -54,8 +104,8 @@ fun OwnTheme(
                 OwnTheme.OwnStyle.Green-> greenLightPalette
                 OwnTheme.OwnStyle.Custom -> customLightPalette
             }
-        }
-    }
+        }*/
+    //}
 
     val typography = OwnTypography(
         heading = TextStyle(
