@@ -24,6 +24,7 @@ class GlobalSettingsViewModel(private val sharedPreferencesModel: SettingsShared
             "Red" -> OwnTheme.OwnStyle.Red
             "Green" -> OwnTheme.OwnStyle.Green
             "Black" -> OwnTheme.OwnStyle.Black
+            "Custom" -> OwnTheme.OwnStyle.Custom
             else -> OwnTheme.OwnStyle.Purple
         }
     )

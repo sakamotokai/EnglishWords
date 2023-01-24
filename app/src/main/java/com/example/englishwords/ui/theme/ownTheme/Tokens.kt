@@ -40,6 +40,14 @@ data class OwnSizesShapes(
     val largeShape:Shape,
 )
 
+data class OwnDp(
+    val smallDp:Dp,
+    val normalDp:Dp,//16
+    val mediumDp:Dp,
+    val bigDp:Dp,
+    val largeDp:Dp
+)
+
 object OwnTheme{
 
     val colors:OwnColors
@@ -58,8 +66,12 @@ object OwnTheme{
     @Composable
     get() = LocalTypography.current
 
+    val dp:OwnDp
+    @Composable
+    get() = LocalDp.current
+
     enum class OwnStyle{
-        Purple,Blue,Red,Green,Black
+        Purple,Blue,Red,Green,Black,Custom
     }
 
     enum class OwnSize{
@@ -84,5 +96,9 @@ object OwnTheme{
 
     val LocalShape = staticCompositionLocalOf<OwnShape> {
         error("No shapes provided")
+    }
+
+    val LocalDp = staticCompositionLocalOf<OwnDp> {
+        error("No dp provided")
     }
 }

@@ -41,10 +41,6 @@ var viewModelsModule = module{
     }
     viewModelOf(::MainScreenViewModel)
     viewModelOf(::WordKeepedViewModel)
-    //viewModelOf(::GlobalSettingsViewModel)
-    /*viewModel{
-        GlobalSettingsViewModel(get(parameters = { parametersOf(SharedPreferencesEnum.settings.route) }))
-    }*/
     single {
         DrawerViewModel()
     }
@@ -61,6 +57,4 @@ var networkModule = module{
     single {
         Repository(get(),get())
     }
-    /*singleOf(::BaseRetrofitBuilder)
-    singleOf(::BaseRetrofitInstance)*/
 }

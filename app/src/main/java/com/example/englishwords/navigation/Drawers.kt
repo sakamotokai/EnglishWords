@@ -23,15 +23,23 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.get
 
-//@SuppressLint("UnusedMaterialScaffoldPaddingParameter")
 @Composable
 fun MainDrawerMenu(navController: NavHostController,scaffoldState: ScaffoldState,scope: CoroutineScope) {
     Column(
         Modifier
             .fillMaxSize()
             .background(color = OwnTheme.colors.primaryBackground)
-            .padding(start = 10.dp, top = 48.dp, end = 10.dp),
     ) {
+        Box(
+            modifier = Modifier
+                .height(120.dp)
+                .fillMaxWidth()
+                .background(
+                    OwnTheme.colors.secondaryBackground,
+                    shape = OwnTheme.sizesShapes.bigShape
+                )
+        )
+        Spacer(modifier = Modifier.height(OwnTheme.dp.mediumDp))
         DrawerItems().screensItem.forEach {
             DrawerCard(item = it, navController,scaffoldState,scope)
             Spacer(modifier = Modifier.height(10.dp))
@@ -41,16 +49,12 @@ fun MainDrawerMenu(navController: NavHostController,scaffoldState: ScaffoldState
 
 @Composable
 fun DrawerCard(item: Screen, navController: NavHostController,scaffoldState: ScaffoldState,scope: CoroutineScope) {
+    Spacer(modifier = Modifier.width(OwnTheme.dp.normalDp))
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .background(
-                color = OwnTheme.colors.secondaryBackground,
-                shape = OwnTheme.sizesShapes.largeShape
-            )
-            .border(
-                1.dp,
-                color = OwnTheme.colors.tintColor,
+                color = OwnTheme.colors.primaryBackground,
                 shape = OwnTheme.sizesShapes.largeShape
             )
             .clickable {
@@ -60,20 +64,21 @@ fun DrawerCard(item: Screen, navController: NavHostController,scaffoldState: Sca
                     }
                     launchSingleTop = true
                 }
-                scope.launch{
+                scope.launch {
                     scaffoldState.drawerState.close()
                 }
             }
     ) {
         Row(
-            Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
+            Modifier.fillMaxWidth()
+                .background(OwnTheme.colors.primaryBackground,shape = OwnTheme.sizesShapes.mediumShape),
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             Icon(
                 imageVector = item.icon,
                 contentDescription = item.route
             )
-            Spacer(modifier = Modifier.width(5.dp))
+            Spacer(modifier = Modifier.width(OwnTheme.dp.normalDp))
             Text(
                 text = item.route,
                 color = OwnTheme.colors.primaryText,

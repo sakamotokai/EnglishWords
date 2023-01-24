@@ -1,6 +1,12 @@
 package com.example.englishwords.screens.wordKeepedScreen
 
+import android.annotation.SuppressLint
+import android.media.MediaPlayer
 import android.util.Log
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateIntAsState
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
@@ -8,20 +14,34 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.CornerSize
+import androidx.compose.foundation.text.ClickableText
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Call
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.node.modifierElementOf
 import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.example.englishwords.db.room.Modeldb
+import com.example.englishwords.models.retrofitModels.CompletedResult
+import com.example.englishwords.navigation.Screen
 import com.example.englishwords.screens.MainCard
+import com.example.englishwords.screens.WindowAboveCard
+import com.example.englishwords.screens.mainScreen.MainScreenViewModel
 import com.example.englishwords.ui.theme.ownTheme.OwnTheme
 import com.example.englishwords.viewModels.MainViewModel
 import kotlinx.coroutines.*
 import org.koin.androidx.compose.get
+import org.koin.androidx.compose.getViewModel
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
@@ -45,11 +65,10 @@ fun WordKeepedScreen() {
                     for (i in startList..endList) {
                         item {
                             val item = allRoomWords.value!![i]
-                            MainCard(
+                            WordKeepedCard(
                                 item = item.word,
                                 color = OwnTheme.colors.blue,
-                                centerText = true,
-                                swipeToDelete = true
+                                roomData = item
                             )
                         }
                     }
@@ -66,11 +85,10 @@ fun WordKeepedScreen() {
                         for (i in startList..endList) {
                             item {
                                 val item = allRoomWords.value!![i]
-                                MainCard(
+                                WordKeepedCard(
                                     item = item.word,
                                     color = OwnTheme.colors.blue,
-                                    centerText = true,
-                                    swipeToDelete = true
+                                    roomData = item
                                 )
                             }
                         }
@@ -80,44 +98,106 @@ fun WordKeepedScreen() {
     }
 }
 
+@OptIn(ExperimentalAnimationApi::class)
+@SuppressLint(
+    "UnusedMaterial3ScaffoldPaddingParameter", "SuspiciousIndentation",
+    "UnrememberedMutableState"
+)
 @Composable
 fun WordKeepedCard(
     item: String,
-    color: androidx.compose.ui.graphics.Color,
-    centerText: Boolean = false,
-    cardType: String = "",
+    color: Color,
+    roomData: Modeldb
 ) {
-    var extentCardSize by remember { mutableStateOf(false) }
-    val dunamicPadding = animateIntAsState(targetValue = if (extentCardSize) 90 else 30)
-    Box(
+    val scope = CoroutineScope(SupervisorJob())
+    val mainViewModel: MainViewModel = getViewModel()
+    var animationValue by remember { mutableStateOf(false) }
+    Column(
         modifier = Modifier
             .fillMaxWidth()
-            .background(OwnTheme.colors.secondaryBackground, shape = CircleShape)
-            .border(width = 3.dp, color = color, shape = CircleShape)
-            .shadow(4.dp, CircleShape.copy(CornerSize(90)))
-            .padding(start = 20.dp, end = 10.dp)
-            .clickable {
-
-            }
-            .height(dunamicPadding.value.dp)
+            .background(OwnTheme.colors.secondaryBackground, shape = OwnTheme.sizesShapes.bigShape)
+            .border(width = 3.dp, color = color, shape = OwnTheme.sizesShapes.bigShape)
+            .padding(start = 20.dp, end = 10.dp, top = OwnTheme.dp.normalDp)
     ) {
-        Column {
-            if (cardType != "")
-                Text(text = cardType, color = OwnTheme.colors.primaryText)
-            val text = AnnotatedString(item)
+        Row(Modifier.fillMaxWidth()) {
+            Text(text = "delete",
+                color = OwnTheme.colors.primaryText,
+                modifier = Modifier
+                    .clickable {
+                        mainViewModel.deleteByName(item)
+                    })
+                Text(
+                    text = item,
+                    textAlign = TextAlign.Center,
+                    color = OwnTheme.colors.primaryText,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable {
+                            animationValue = !animationValue
+                        }
+                )
+        }
+        AnimatedVisibility(
+            visible = animationValue,
+        ) {
+            WordKeepedCardContent(roomData = roomData)
+        }
+        Spacer(modifier = Modifier.height(OwnTheme.dp.normalDp))
+    }
+    Spacer(modifier = Modifier.height(OwnTheme.dp.normalDp))
+}
+
+@Composable
+fun WordKeepedFloatingActionButton(linkToSound:String){
+    val mediaPlayer = MediaPlayer()
+    FloatingActionButton(
+        onClick = {
+            try {
+                mediaPlayer.setDataSource(linkToSound)
+                mediaPlayer.prepare()
+                mediaPlayer.start()
+            } catch (e: java.lang.Exception) {
+                mediaPlayer.start()
+            }
+        },
+        shape = CircleShape,
+        containerColor = OwnTheme.colors.blue
+    ) {
+        Icon(
+            imageVector = Icons.Filled.Call,
+            contentDescription = null,
+            tint = OwnTheme.colors.primaryBackground
+        )
+    }
+}
+
+@Composable
+fun WordKeepedCardContent(roomData: Modeldb) {
+    Column {
+        Spacer(modifier = Modifier.height(OwnTheme.dp.normalDp))
+        WordKeepedFloatingActionButton(roomData.linkToSound)
+        Spacer(modifier = Modifier.height(OwnTheme.dp.normalDp))
+        Text(
+            text = "Definitions:",
+            color = OwnTheme.colors.primaryText
+        )
+        roomData.definitions.forEach { definition ->
             Text(
-                text = text,
-                modifier = Modifier.fillMaxWidth(),
-                style =
-                if (centerText)
-                    LocalTextStyle.current.copy(
-                        textAlign = TextAlign.Center,
-                        color = OwnTheme.colors.primaryText
-                    )
-                else
-                    LocalTextStyle.current.copy(color = OwnTheme.colors.primaryText)
+                text = definition,
+                color = OwnTheme.colors.primaryText
             )
+            Spacer(modifier = Modifier.height(OwnTheme.dp.normalDp))
+        }
+        Text(
+            text = "Examples:",
+            color = OwnTheme.colors.primaryText
+        )
+        roomData.examples.forEach { example ->
+            Text(
+                text = example,
+                color = OwnTheme.colors.primaryText
+            )
+            Spacer(modifier = Modifier.height(OwnTheme.dp.normalDp))
         }
     }
-    Spacer(modifier = Modifier.height(8.dp))
 }

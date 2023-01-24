@@ -32,6 +32,8 @@ class MainViewModel(
 
     private var _getAllRoomData:MutableStateFlow<List<Modeldb>?> = MutableStateFlow(null)
     var getAllRoomData:StateFlow<List<Modeldb>?> = _getAllRoomData
+    private var _getSingleRoomData:MutableStateFlow<Modeldb?> = MutableStateFlow(null)
+    var getSingleRoomData:StateFlow<Modeldb?> = _getSingleRoomData
 
     private var _completedResult:MutableStateFlow<CompletedResult?> = MutableStateFlow(null)
     var completedResult:StateFlow<CompletedResult?> = _completedResult
@@ -101,6 +103,12 @@ class MainViewModel(
             repository.getAll().collect{
                 _getAllRoomData.value = it
             }
+        }
+    }
+
+    fun getRoomDataByWord(word:String){
+        viewModelScope.launch {
+            _getSingleRoomData.value = repository.getDataByWord(word)
         }
     }
 

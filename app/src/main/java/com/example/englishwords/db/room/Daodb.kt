@@ -21,4 +21,6 @@ interface Daodb {
     fun getGoalWord(wordInstance:String):List<Modeldb>
     @Query("DELETE FROM wordKeeper WHERE word LIKE :name")
     fun deleteByName(name:String)
+    @Query("SELECT * FROM wordKeeper WHERE word LIKE :word")
+    fun getDataByWord(word:String):Modeldb
 }

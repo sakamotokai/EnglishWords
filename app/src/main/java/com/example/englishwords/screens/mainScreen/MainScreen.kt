@@ -397,8 +397,7 @@ fun MainCard(
     cardType: String = "",
     savable: Boolean = false,
     completedResult: CompletedResult? = null,
-    wordCard: Boolean = false,
-    swipeToDelete: Boolean = false
+    wordCard: Boolean = false
 ) {
     val mainViewModel: MainViewModel = getViewModel()
     val mainScreenViewModel: MainScreenViewModel = koinViewModel()
@@ -462,12 +461,6 @@ fun MainCard(
                                     }
                                 }
                             })
-                if (swipeToDelete) Text(text = "delete",
-                    color = OwnTheme.colors.primaryText,
-                    modifier = Modifier
-                        .clickable {
-                            mainViewModel.deleteByName(item)
-                        })
                 ClickableText(
                     text = text,
                     onClick = { offset ->
@@ -492,104 +485,6 @@ fun MainCard(
                     else
                         LocalTextStyle.current.copy(color = OwnTheme.colors.primaryText)
                 )
-            }
-
-        }
-    }
-    Spacer(modifier = Modifier.height(8.dp))
-}
-
-@Composable
-fun AboveCard(
-    item: String,
-    color: Color,
-    centerText: Boolean = false,
-    cardType: String = "",
-    savable: Boolean = false,
-    completedResult: CompletedResult? = null,
-    wordCard: Boolean = false
-) {
-    val mainViewModel: MainViewModel = getViewModel()
-    var word: List<String> = listOf()
-    if (wordCard) {
-        word = item.split(" ")
-        Log.e("Log", word[2])
-        mainViewModel.getGoalWord(word[2])
-    }
-    Log.e("Log", "Card")
-    val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
-    var sentence: String? by remember { mutableStateOf(null) }
-    var goalWord = mainViewModel.goalWord.collectAsState()
-
-    Log.e("Log", "---------${goalWord.value}--------")
-    if (sentence != null)
-        WindowAboveCard(
-            word = sentence!!
-                .replace(",", "")
-                .replace(".", "")
-                .replace("!", "")
-                .replace(":", "")
-                .replace(")", "")
-                .replace(";", "")
-        )
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(OwnTheme.colors.secondaryBackground, shape = CircleShape)
-            .border(width = 3.dp, color = color, shape = CircleShape)
-            .shadow(4.dp, CircleShape.copy(CornerSize(90)))
-            .padding(start = 20.dp, end = 10.dp)
-    ) {
-        Column {
-            if (cardType != "") {
-                Text(text = cardType, color = OwnTheme.colors.primaryText)
-            }//TODO("Make no visible save word when touch word is contained in room db")
-            val text = AnnotatedString(item)
-            Row(Modifier.fillMaxWidth()) {
-                if (completedResult?.word != null)
-                    if (savable && goalWord.value == "") Text(text = "Save",
-                        color = OwnTheme.colors.primaryText,
-                        modifier = Modifier
-                            .clickable {
-                                if (completedResult.word.isNotEmpty()) {
-                                    scope.launch {
-                                        val localModeldb: Modeldb = Modeldb()
-                                        localModeldb.definitions =
-                                            completedResult.definition ?: listOf("No Data")
-                                        localModeldb.examples =
-                                            completedResult.instance ?: listOf("No Data")
-                                        localModeldb.linkToSound =
-                                            completedResult.urlToListening ?: ""
-                                        localModeldb.word = completedResult.word
-                                        mainViewModel.insert(localModeldb)
-                                    }
-                                }
-                            })
-                ClickableText(
-                    text = text,
-                    onClick = { offset ->
-                        val words = text.split(" ")
-                        var cursor = 0
-                        for (word in words) {
-                            cursor += word.length
-                            if (offset <= cursor) {
-                                sentence = word
-                                break
-                            }
-                            cursor++
-                        }
-                    },
-                    modifier = Modifier.fillMaxWidth(),
-                    style =
-                    if (centerText)
-                        LocalTextStyle.current.copy(
-                            textAlign = TextAlign.Center,
-                            color = OwnTheme.colors.primaryText
-                        )
-                    else
-                        LocalTextStyle.current.copy(color = OwnTheme.colors.primaryText)
-                )
-
             }
 
         }
@@ -685,63 +580,4 @@ fun WindowAboveCard(word: String?, mainScreenViewModel: MainScreenViewModel = ko
             }
         }
     }
-}
-
-private fun Modifier.swipeToDismiss(
-    onDismissed: () -> Unit
-): Modifier = composed {
-    // This Animatable stores the horizontal offset for the element.
-    val offsetX = remember { Animatable(0f) }
-    pointerInput(Unit) {
-        // Used to calculate a settling position of a fling animation.
-        val decay = splineBasedDecay<Float>(this)
-        // Wrap in a coroutine scope to use suspend functions for touch events and animation.
-        coroutineScope {
-            while (true) {
-                // Wait for a touch down event.
-                val pointerId = awaitPointerEventScope { awaitFirstDown().id }
-                // Interrupt any ongoing animation.
-                offsetX.stop()
-                // Prepare for drag events and record velocity of a fling.
-                val velocityTracker = VelocityTracker()
-                // Wait for drag events.
-                awaitPointerEventScope {
-                    horizontalDrag(pointerId) { change ->
-                        // Record the position after offset
-                        val horizontalDragOffset = offsetX.value + change.positionChange().x
-                        launch {
-                            // Overwrite the Animatable value while the element is dragged.
-                            offsetX.snapTo(horizontalDragOffset)
-                        }
-                        // Record the velocity of the drag.
-                        velocityTracker.addPosition(change.uptimeMillis, change.position)
-                        // Consume the gesture event, not passed to external
-                        change.consumePositionChange()
-                    }
-                }
-                // Dragging finished. Calculate the velocity of the fling.
-                val velocity = velocityTracker.calculateVelocity().x
-                // Calculate where the element eventually settles after the fling animation.
-                val targetOffsetX = decay.calculateTargetValue(offsetX.value, velocity)
-                // The animation should end as soon as it reaches these bounds.
-                offsetX.updateBounds(
-                    lowerBound = -size.width.toFloat(),
-                    upperBound = size.width.toFloat()
-                )
-                launch {
-                    if (targetOffsetX.absoluteValue <= size.width) {
-                        // Not enough velocity; Slide back to the default position.
-                        offsetX.animateTo(targetValue = 0f, initialVelocity = velocity)
-                    } else {
-                        // Enough velocity to slide away the element to the edge.
-                        offsetX.animateDecay(velocity, decay)
-                        // The element was swiped away.
-                        onDismissed()
-                    }
-                }
-            }
-        }
-    }
-        // Apply the horizontal offset to the element.
-        .offset { IntOffset(offsetX.value.roundToInt(), 0) }
 }

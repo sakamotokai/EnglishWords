@@ -11,4 +11,5 @@ interface RoomRepositoryInterface {
     suspend fun deleteEmptyWord()
     suspend fun getGoalWord(goalWord:String):String
     suspend fun deleteByName(name:String)
+    suspend fun getDataByWord(word:String):Modeldb
 }

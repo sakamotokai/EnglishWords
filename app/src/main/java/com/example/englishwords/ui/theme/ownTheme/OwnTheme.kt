@@ -10,6 +10,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.englishwords.ui.theme.ownTheme.OwnTheme.LocalColors
+import com.example.englishwords.ui.theme.ownTheme.OwnTheme.LocalDp
 import com.example.englishwords.ui.theme.ownTheme.OwnTheme.LocalShape
 import com.example.englishwords.ui.theme.ownTheme.OwnTheme.LocalSizesShapes
 import com.example.englishwords.ui.theme.ownTheme.OwnTheme.LocalTypography
@@ -31,6 +32,8 @@ fun OwnTheme(
         largeShape = RoundedCornerShape(32)
     )
 
+    val dp = baseDp
+
     val colors = when(darkTheme){
         true->{
             when(style){
@@ -39,6 +42,7 @@ fun OwnTheme(
                 OwnTheme.OwnStyle.Black -> darkDarkPalette
                 OwnTheme.OwnStyle.Red -> redDarkPalette
                 OwnTheme.OwnStyle.Green -> greenDarkPalette
+                OwnTheme.OwnStyle.Custom -> customDarkPalette
             }
         }
         false->{
@@ -48,6 +52,7 @@ fun OwnTheme(
                 OwnTheme.OwnStyle.Red-> redLightPalette
                 OwnTheme.OwnStyle.Black-> darkLightPalette
                 OwnTheme.OwnStyle.Green-> greenLightPalette
+                OwnTheme.OwnStyle.Custom -> customLightPalette
             }
         }
     }
@@ -96,6 +101,7 @@ fun OwnTheme(
         LocalColors provides colors,
         LocalShape provides shapes,
         LocalSizesShapes provides sizesShapes,
+        LocalDp provides dp,
         content = content
     )
 }

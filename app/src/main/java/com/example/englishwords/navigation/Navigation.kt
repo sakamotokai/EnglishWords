@@ -3,6 +3,7 @@ package com.example.englishwords.navigation
 import android.annotation.SuppressLint
 import android.media.Image
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Build
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Star
@@ -17,6 +18,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.englishwords.screens.MainScreen
 import com.example.englishwords.screens.settingsScreen.SettingsScreen
+import com.example.englishwords.screens.settingsScreen.manageTheme.ManageTheme
 import com.example.englishwords.screens.wordKeepedScreen.WordKeepedScreen
 import com.example.englishwords.ui.theme.ownTheme.OwnTheme
 import com.example.englishwords.viewModels.GlobalSettingsViewModel
@@ -27,6 +29,10 @@ sealed class Screen(val route: String, val icon: ImageVector) {
     object MainScreen : Screen("Main", Icons.Filled.Home)
     object WordKeeped : Screen("Saved Word", Icons.Filled.Star)
     object SettingsScreen:Screen("Settings",Icons.Filled.Settings)
+}
+
+sealed class SettingsScreen(val route: String,val icon:ImageVector){
+    object CustomTheme :SettingsScreen(route = "Manage theme",icon = Icons.Filled.Build)
 }
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter", "ComposableDestinationInComposeScope")
@@ -45,7 +51,10 @@ fun Navigation(
             WordKeepedScreen()
         }
         composable(Screen.SettingsScreen.route){
-            SettingsScreen()
+            SettingsScreen(navController)
+        }
+        composable(SettingsScreen.CustomTheme.route){
+            ManageTheme()
         }
     }
 }
