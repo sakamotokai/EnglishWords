@@ -3,6 +3,7 @@ package com.example.englishwords.viewModels
 
 import android.content.SharedPreferences
 import android.util.Log
+import androidx.compose.runtime.MutableState
 import androidx.lifecycle.ViewModel
 import com.example.englishwords.models.preferencesModels.SettingsSharedPreferences
 import com.example.englishwords.ui.theme.ownTheme.OwnTheme
@@ -14,6 +15,9 @@ class GlobalSettingsViewModel(private val sharedPreferencesModel: SettingsShared
     init {
         Log.e("Log", "Setting Screen Create")
     }
+
+    private var _mainDrawerGesturesEnabled:MutableStateFlow<Boolean> = MutableStateFlow(true)
+    var mainDrawerGesturesEnabled:StateFlow<Boolean> = _mainDrawerGesturesEnabled
 
     private var sharedPreferences = sharedPreferencesModel.getPreferences()
 
@@ -41,5 +45,13 @@ class GlobalSettingsViewModel(private val sharedPreferencesModel: SettingsShared
     fun changeDarkMode(){
         _isDarkMode.value = !_isDarkMode.value
         sharedPreferences.edit().putBoolean("isDarkmode", _isDarkMode.value).apply()
+    }
+
+    fun setMainGesturesEnabled(state:Boolean){
+        _mainDrawerGesturesEnabled.value = state
+    }
+
+    fun changeMainGesturesEnabled(){
+        _mainDrawerGesturesEnabled.value = !_mainDrawerGesturesEnabled.value
     }
 }

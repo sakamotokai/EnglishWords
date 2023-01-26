@@ -41,7 +41,7 @@ fun OwnTheme(
     val colors =
         if(darkTheme) {
             baseDarkPalette.copy(
-                tintColor = Color(settingsViewModel.tintColorDark.collectAsState().value),
+                tintColor = Color(settingsViewModel.tintColorDark.collectAsState().value.toULong()),
                 //primaryBackground = Color(settingsViewModel.primaryBackgroundDark.collectAsState().value),
                 black = Color(settingsViewModel.blackDark.collectAsState().value),
                 blue = Color(settingsViewModel.blueDark.collectAsState().value),
@@ -52,11 +52,13 @@ fun OwnTheme(
                 purple = Color(settingsViewModel.purpleDark.collectAsState().value),
                 red = Color(settingsViewModel.redDark.collectAsState().value),
                 //secondaryBackground = Color(settingsViewModel.secondaryBackgroundDark.collectAsState().value),
-                secondaryText = Color(settingsViewModel.secondaryTextDark.collectAsState().value)
+                secondaryText = Color(settingsViewModel.secondaryTextDark.collectAsState().value),
+                exampleCard = Color(settingsViewModel.exampleCardDark.collectAsState().value.toULong()),
+                definitionCard = Color(settingsViewModel.definitionCardDark.collectAsState().value.toULong())
             )
         }else {
             baseLightPalette.copy(
-                tintColor = Color(settingsViewModel.tintColor.collectAsState().value),
+                tintColor = Color(settingsViewModel.tintColor.collectAsState().value.toULong()),
                 //primaryBackground = Color(settingsViewModel.primaryBackground.collectAsState().value),
                 black = Color(settingsViewModel.black.collectAsState().value),
                 blue = Color(settingsViewModel.blue.collectAsState().value),
@@ -67,7 +69,9 @@ fun OwnTheme(
                 purple = Color(settingsViewModel.purple.collectAsState().value),
                 red = Color(settingsViewModel.red.collectAsState().value),
                 //secondaryBackground = Color(settingsViewModel.secondaryBackground.collectAsState().value),
-                secondaryText = Color(settingsViewModel.secondaryText.collectAsState().value)
+                secondaryText = Color(settingsViewModel.secondaryText.collectAsState().value),
+                exampleCard = Color(settingsViewModel.exampleCard.collectAsState().value.toULong()),
+                definitionCard = Color(settingsViewModel.definitionCard.collectAsState().value.toULong())
             )
         }
     /*get<CustomColor>().customPalette.copy(

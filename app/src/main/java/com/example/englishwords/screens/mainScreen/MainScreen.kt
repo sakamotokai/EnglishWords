@@ -313,11 +313,11 @@ fun ShowCard(
                 }
                 if (completedResult.definition != null)
                     items(completedResult.definition) { item ->
-                        MainCard(item = item, color = OwnTheme.colors.red, cardType = "Definition:")
+                        MainCard(item = item, color = OwnTheme.colors.definitionCard, cardType = "Definition:")
                     }
                 if (completedResult.instance != null)
                     items(completedResult.instance) { item ->
-                        MainCard(item = item, color = OwnTheme.colors.blue, cardType = "Instance:")
+                        MainCard(item = item, color = OwnTheme.colors.exampleCard, cardType = "Instance:")
                     }
             }
     }
@@ -493,7 +493,7 @@ fun WindowAboveCard(word: String?, mainScreenViewModel: MainScreenViewModel = ko
                                 completedResult.value!!.definition!!.forEach { item ->
                                     MainCard(
                                         item = item,
-                                        color = OwnTheme.colors.red,
+                                        color = OwnTheme.colors.definitionCard,
                                         cardType = "Definition:"
                                     )
                                 }
@@ -501,7 +501,7 @@ fun WindowAboveCard(word: String?, mainScreenViewModel: MainScreenViewModel = ko
                                 completedResult.value!!.instance!!.forEach { item ->
                                     MainCard(
                                         item = item,
-                                        color = OwnTheme.colors.blue,
+                                        color = OwnTheme.colors.exampleCard,
                                         cardType = "Instance:"
                                     )
                                 }

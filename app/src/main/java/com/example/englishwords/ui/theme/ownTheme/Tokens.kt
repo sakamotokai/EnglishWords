@@ -19,7 +19,9 @@ data class OwnColors(
     val error:Color,
     val green:Color,
     val blue:Color,
-    val black:Color
+    val black:Color,
+    val definitionCard:Color,
+    val exampleCard:Color
 )
 
 data class OwnTypography(

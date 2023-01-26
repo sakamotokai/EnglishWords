@@ -106,6 +106,22 @@ class SettingsViewModel(settingsSharedPreferences: SettingsSharedPreferences) : 
     )
     var blackDark: StateFlow<Long> = _blackDark
 
+    private var _definitionCardDark: MutableStateFlow<Long> = MutableStateFlow(
+        settingsSharedPreference.getLong(
+            CustomColorName.CustomThemeDefinitionCard.name,
+            0xFFCD0404
+        )
+    )
+    var definitionCardDark: StateFlow<Long> = _definitionCardDark
+
+    private var _exampleCardDark: MutableStateFlow<Long> = MutableStateFlow(
+        settingsSharedPreference.getLong(
+            CustomColorName.CustomThemeExampleCard.name,
+            0xFF0081C9
+        )
+    )
+    var exampleCardDark: StateFlow<Long> = _exampleCardDark
+
     fun setTintDark(color: Long) {
         _tintColorDark.value = color
         settingsSharedPreference.edit().putLong(CustomColorName.CustomThemeTintColor.name, color)
@@ -164,6 +180,18 @@ class SettingsViewModel(settingsSharedPreferences: SettingsSharedPreferences) : 
     fun setPrimaryTextDark(color: Long) {
         _primaryTextDark.value = color
         settingsSharedPreference.edit().putLong(CustomColorName.CustomThemePrimaryText.name, color)
+            .apply()
+    }
+
+    fun setDefinitionCardDark(color: Long) {
+        _definitionCardDark.value = color
+        settingsSharedPreference.edit().putLong(CustomColorName.CustomThemeDefinitionCard.name, color)
+            .apply()
+    }
+
+    fun setExampleCardDark(color: Long) {
+        _exampleCardDark.value = color
+        settingsSharedPreference.edit().putLong(CustomColorName.CustomThemeExampleCard.name, color)
             .apply()
     }
 
@@ -263,6 +291,22 @@ class SettingsViewModel(settingsSharedPreferences: SettingsSharedPreferences) : 
     )
     var black: StateFlow<Long> = _black
 
+    private var _definitionCard: MutableStateFlow<Long> = MutableStateFlow(
+        settingsSharedPreference.getLong(
+            CustomColorName.CustomThemeDefinitionCard.name,
+            0xFFFF0032
+        )
+    )
+    var definitionCard: StateFlow<Long> = _definitionCard
+
+    private var _exampleCard: MutableStateFlow<Long> = MutableStateFlow(
+        settingsSharedPreference.getLong(
+            CustomColorName.CustomThemeExampleCard.name,
+            0xFF5BC0F8
+        )
+    )
+    var exampleCard: StateFlow<Long> = _exampleCard
+
     fun setTint(color: Long) {
         _tintColor.value = color
         settingsSharedPreference.edit().putLong(CustomColorName.CustomThemeTintColor.name, color)
@@ -321,6 +365,18 @@ class SettingsViewModel(settingsSharedPreferences: SettingsSharedPreferences) : 
     fun setPrimaryText(color: Long) {
         _primaryText.value = color
         settingsSharedPreference.edit().putLong(CustomColorName.CustomThemePrimaryText.name, color)
+            .apply()
+    }
+
+    fun setDefinitionCard(color: Long) {
+        _definitionCard.value = color
+        settingsSharedPreference.edit().putLong(CustomColorName.CustomThemeDefinitionCard.name, color)
+            .apply()
+    }
+
+    fun setExampleCard(color: Long) {
+        _exampleCard.value = color
+        settingsSharedPreference.edit().putLong(CustomColorName.CustomThemeExampleCard.name, color)
             .apply()
     }
 

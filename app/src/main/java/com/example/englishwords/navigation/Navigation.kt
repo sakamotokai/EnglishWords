@@ -3,10 +3,7 @@ package com.example.englishwords.navigation
 import android.annotation.SuppressLint
 import android.media.Image
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Build
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
@@ -19,6 +16,7 @@ import androidx.navigation.compose.rememberNavController
 import com.example.englishwords.screens.MainScreen
 import com.example.englishwords.screens.settingsScreen.SettingsScreen
 import com.example.englishwords.screens.settingsScreen.manageTheme.ManageTheme
+import com.example.englishwords.screens.settingsScreen.manageTheme.changeColor.ChangeColorScreen
 import com.example.englishwords.screens.wordKeepedScreen.WordKeepedScreen
 import com.example.englishwords.ui.theme.ownTheme.OwnTheme
 import com.example.englishwords.viewModels.GlobalSettingsViewModel
@@ -33,6 +31,7 @@ sealed class Screen(val route: String, val icon: ImageVector) {
 
 sealed class SettingsScreen(val route: String,val icon:ImageVector){
     object CustomTheme :SettingsScreen(route = "Manage theme",icon = Icons.Filled.Build)
+    object ChangeColor :SettingsScreen(route = "Change Color", icon = Icons.Filled.Phone)
 }
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter", "ComposableDestinationInComposeScope")
@@ -54,7 +53,10 @@ fun Navigation(
             SettingsScreen(navController)
         }
         composable(SettingsScreen.CustomTheme.route){
-            ManageTheme()
+            ManageTheme(navController)
+        }
+        composable(SettingsScreen.ChangeColor.route){
+            ChangeColorScreen(navController)
         }
     }
 }

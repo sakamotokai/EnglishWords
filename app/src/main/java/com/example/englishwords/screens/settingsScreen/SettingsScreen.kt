@@ -33,8 +33,7 @@ import com.example.englishwords.screens.ourUiElements.customClickable
 import com.example.englishwords.ui.theme.ownTheme.OwnTheme
 
 @Composable
-fun SettingsScreen(navController:NavHostController) {
-
+fun SettingsScreen(navController: NavHostController) {
     Column(Modifier.fillMaxSize()) {
         Spacer(modifier = Modifier.height(50.dp))
         Text(
@@ -66,34 +65,17 @@ fun SettingsScreen(navController:NavHostController) {
         ) {
             Column {
                 Spacer(modifier = Modifier.height(OwnTheme.dp.smallDp))
-
                 SettingsElementCard(SettingsScreen.CustomTheme, endElement = {
                     SettingsArrowForward()
-                },navController)
+                }, navController)
                 Spacer(modifier = Modifier.height(OwnTheme.dp.smallDp))
-
-                SettingsElementCard(SettingsScreen.CustomTheme, endElement = {
-                    SettingsArrowForward()
-                },navController)
-                Spacer(modifier = Modifier.height(OwnTheme.dp.smallDp))
-
-                SettingsElementCard(SettingsScreen.CustomTheme, endElement = {
-                    SettingsArrowForward()
-                },navController)
-                Spacer(modifier = Modifier.height(OwnTheme.dp.smallDp))
-
-                SettingsElementCard(SettingsScreen.CustomTheme, endElement = {
-                    SettingsArrowForward()
-                },navController)
-                Spacer(modifier = Modifier.height(OwnTheme.dp.smallDp))
-
             }
         }
     }
 }
 
 @Composable
-fun SettingsArrowForward(){
+fun SettingsArrowForward() {
     Icon(
         imageVector = Icons.Filled.ArrowForward,
         contentDescription = null,
@@ -102,7 +84,11 @@ fun SettingsArrowForward(){
 }
 
 @Composable
-fun SettingsElementCard(settingsElement:SettingsScreen,endElement: @Composable (()->Unit),navController: NavHostController){
+fun SettingsElementCard(
+    settingsElement: SettingsScreen,
+    endElement: @Composable (() -> Unit),
+    navController: NavHostController
+) {
     Row(
         Modifier
             .fillMaxWidth()
@@ -116,21 +102,22 @@ fun SettingsElementCard(settingsElement:SettingsScreen,endElement: @Composable (
             modifier = Modifier.fillMaxHeight(),
             verticalAlignment = Alignment.CenterVertically
         ) {
-        Icon(
-            imageVector = settingsElement.icon,
-            contentDescription = settingsElement.route
-        )
-        Spacer(modifier = Modifier.width(OwnTheme.dp.normalDp))
+            Icon(
+                imageVector = settingsElement.icon,
+                contentDescription = settingsElement.route
+            )
+            Spacer(modifier = Modifier.width(OwnTheme.dp.normalDp))
             Text(
                 text = settingsElement.route,
                 color = OwnTheme.colors.primaryText
             )
         }
         Row(
+            verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.End,
-        modifier = Modifier
-            .fillMaxWidth()
-            ) {
+            modifier = Modifier
+                .fillMaxSize()
+        ) {
             endElement()
         }
     }

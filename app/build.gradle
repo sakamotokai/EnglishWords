@@ -49,6 +49,9 @@ android {
 
 dependencies {
 
+    //Color Picker
+    implementation 'com.godaddy.android.colorpicker:compose-color-picker:0.6.0'
+
     //Koin
     def koin_version= "3.3.2"
     def koin_android_compose_version= "3.4.1"
