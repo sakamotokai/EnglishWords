@@ -21,13 +21,15 @@ data class OwnColors(
     val blue:Color,
     val black:Color,
     val definitionCard:Color,
-    val exampleCard:Color
+    val exampleCard:Color,
+    val savedCard:Color
 )
 
 data class OwnTypography(
     val heading: TextStyle,
     val body: TextStyle,
-    val toolbar: TextStyle
+    val toolbar: TextStyle,
+    val general:TextStyle
 )
 
 data class OwnShape(

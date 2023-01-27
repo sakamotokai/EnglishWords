@@ -3,6 +3,7 @@ package com.example.englishwords.screens.settingsScreen
 import androidx.lifecycle.ViewModel
 import com.example.englishwords.models.preferencesModels.SettingsSharedPreferences
 import com.example.englishwords.ui.theme.ownTheme.CustomColorName
+import com.example.englishwords.ui.theme.ownTheme.CustomTextSize
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
@@ -45,7 +46,7 @@ class SettingsViewModel(settingsSharedPreferences: SettingsSharedPreferences) : 
     private var _tintColorDark: MutableStateFlow<Long> = MutableStateFlow(
         settingsSharedPreference.getLong(
             CustomColorName.CustomThemeTintColor.name,
-            0xFF5BC0F8
+            -56415705397985280
         )
     )
     var tintColorDark: StateFlow<Long> = _tintColorDark
@@ -109,7 +110,7 @@ class SettingsViewModel(settingsSharedPreferences: SettingsSharedPreferences) : 
     private var _definitionCardDark: MutableStateFlow<Long> = MutableStateFlow(
         settingsSharedPreference.getLong(
             CustomColorName.CustomThemeDefinitionCard.name,
-            0xFFCD0404
+            -63524112496066560
         )
     )
     var definitionCardDark: StateFlow<Long> = _definitionCardDark
@@ -117,10 +118,24 @@ class SettingsViewModel(settingsSharedPreferences: SettingsSharedPreferences) : 
     private var _exampleCardDark: MutableStateFlow<Long> = MutableStateFlow(
         settingsSharedPreference.getLong(
             CustomColorName.CustomThemeExampleCard.name,
-            0xFF0081C9
+            -49090505530671104
         )
     )
     var exampleCardDark: StateFlow<Long> = _exampleCardDark
+
+    private var _savedCardDark: MutableStateFlow<Long> = MutableStateFlow(
+        settingsSharedPreference.getLong(
+            CustomColorName.CustomThemeSavedCard.name,
+            -49090505530671104
+        )
+    )
+    var savedCardDark: StateFlow<Long> = _savedCardDark
+
+    fun setSavedDark(color: Long) {
+        _savedCardDark.value = color
+        settingsSharedPreference.edit().putLong(CustomColorName.CustomThemeSavedCard.name, color)
+            .apply()
+    }
 
     fun setTintDark(color: Long) {
         _tintColorDark.value = color
@@ -230,7 +245,7 @@ class SettingsViewModel(settingsSharedPreferences: SettingsSharedPreferences) : 
     private var _tintColor: MutableStateFlow<Long> = MutableStateFlow(
         settingsSharedPreference.getLong(
             CustomColorName.CustomThemeTintColor.name,
-            0xFF5BC0F8
+            -23265833547464704//4284203256//0xFF5BC0F8
         )
     )
     var tintColor: StateFlow<Long> = _tintColor
@@ -294,7 +309,7 @@ class SettingsViewModel(settingsSharedPreferences: SettingsSharedPreferences) : 
     private var _definitionCard: MutableStateFlow<Long> = MutableStateFlow(
         settingsSharedPreference.getLong(
             CustomColorName.CustomThemeDefinitionCard.name,
-            0xFFFF0032
+            -15902262442328064
         )
     )
     var definitionCard: StateFlow<Long> = _definitionCard
@@ -302,10 +317,24 @@ class SettingsViewModel(settingsSharedPreferences: SettingsSharedPreferences) : 
     private var _exampleCard: MutableStateFlow<Long> = MutableStateFlow(
         settingsSharedPreference.getLong(
             CustomColorName.CustomThemeExampleCard.name,
-            0xFF5BC0F8
+            -19842955065950208
         )
     )
     var exampleCard: StateFlow<Long> = _exampleCard
+
+    private var _savedCard: MutableStateFlow<Long> = MutableStateFlow(
+        settingsSharedPreference.getLong(
+            CustomColorName.CustomThemeSavedCard.name,
+            -19842955065950208
+        )
+    )
+    var savedCard: StateFlow<Long> = _savedCard
+
+    fun setSavedCard(color: Long) {
+        _savedCard.value = color
+        settingsSharedPreference.edit().putLong(CustomColorName.CustomThemeSavedCard.name, color)
+            .apply()
+    }
 
     fun setTint(color: Long) {
         _tintColor.value = color
@@ -377,6 +406,20 @@ class SettingsViewModel(settingsSharedPreferences: SettingsSharedPreferences) : 
     fun setExampleCard(color: Long) {
         _exampleCard.value = color
         settingsSharedPreference.edit().putLong(CustomColorName.CustomThemeExampleCard.name, color)
+            .apply()
+    }
+
+    private var _textSize: MutableStateFlow<Float> = MutableStateFlow(
+        settingsSharedPreference.getFloat(
+            CustomTextSize.CustomTextSizeGeneral.name,
+            14f
+        )
+    )
+    var textSize: StateFlow<Float> = _textSize
+
+    fun setTextSize(size:Float) {
+        _textSize.value = size
+        settingsSharedPreference.edit().putFloat(CustomTextSize.CustomTextSizeGeneral.name, size)
             .apply()
     }
 

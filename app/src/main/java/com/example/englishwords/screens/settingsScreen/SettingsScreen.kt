@@ -1,15 +1,8 @@
 package com.example.englishwords.screens.settingsScreen
 
-import android.util.Log
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material.icons.filled.Search
@@ -17,16 +10,9 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Shape
-import androidx.compose.ui.graphics.SolidColor
-import androidx.compose.ui.graphics.takeOrElse
-import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.*
 import androidx.navigation.NavHostController
-import com.example.englishwords.navigation.Screen
 import com.example.englishwords.navigation.SettingsScreen
 import com.example.englishwords.screens.ourUiElements.CustomOutlinedTextField
 import com.example.englishwords.screens.ourUiElements.customClickable
@@ -41,18 +27,10 @@ fun SettingsScreen(navController: NavHostController) {
             textAlign = TextAlign.Start,
             modifier = Modifier
                 .padding(start = OwnTheme.dp.mediumDp),
-            style = OwnTheme.typography.heading.copy(color = OwnTheme.colors.primaryText)
+            style = OwnTheme.typography.heading.copy(color = OwnTheme.colors.primaryText, fontSize = (OwnTheme.typography.heading.fontSize.value +
+                    OwnTheme.typography.general.fontSize.value - 14f).sp)
         )
-        Spacer(modifier = Modifier.height(OwnTheme.dp.normalDp))
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(OwnTheme.dp.bigDp),
-
-            horizontalArrangement = Arrangement.Center
-        ) {
-            SearchBarSettings()
-        }
+        //Spacer(modifier = Modifier.height(OwnTheme.dp.normalDp))
         Spacer(modifier = Modifier.height(OwnTheme.dp.bigDp))
         Box(
             modifier = Modifier
@@ -64,14 +42,19 @@ fun SettingsScreen(navController: NavHostController) {
                 .padding(start = OwnTheme.dp.smallDp)
         ) {
             Column {
-                Spacer(modifier = Modifier.height(OwnTheme.dp.smallDp))
-                SettingsElementCard(SettingsScreen.CustomTheme, endElement = {
-                    SettingsArrowForward()
-                }, navController)
-                Spacer(modifier = Modifier.height(OwnTheme.dp.smallDp))
+                SettingsThemeBox(navController)
             }
         }
     }
+}
+
+@Composable
+fun SettingsThemeBox(navController: NavHostController){
+    Spacer(modifier = Modifier.height(OwnTheme.dp.smallDp))
+    SettingsElementCard(SettingsScreen.CustomTheme, endElement = {
+        SettingsArrowForward()
+    }, navController)
+    Spacer(modifier = Modifier.height(OwnTheme.dp.smallDp))
 }
 
 @Composable
@@ -94,7 +77,6 @@ fun SettingsElementCard(
             .fillMaxWidth()
             .customClickable {
                 navController.navigate(settingsElement.route)
-                Log.e("Log", "Click CLick")
             }
             .height(OwnTheme.dp.bigDp)
     ) {
@@ -109,7 +91,8 @@ fun SettingsElementCard(
             Spacer(modifier = Modifier.width(OwnTheme.dp.normalDp))
             Text(
                 text = settingsElement.route,
-                color = OwnTheme.colors.primaryText
+                color = OwnTheme.colors.primaryText,
+                fontSize = OwnTheme.typography.general.fontSize.value.sp
             )
         }
         Row(
@@ -123,7 +106,7 @@ fun SettingsElementCard(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalUnitApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SearchBarSettings() {
     var localSearchText by remember { mutableStateOf("") }

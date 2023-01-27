@@ -10,7 +10,7 @@ val baseLightPalette = OwnColors(
     primaryBackground = Color(0xFFFFFFFF),
     secondaryBackground = Color(0xFFE1E1E1),
     secondaryText = Color(0xCC7A8A99),
-    tintColor = Color.Magenta,
+    tintColor = Color(0xFF9b4ec3),
     backgroundInBackground = Color(0xFFD0D0D0),
     purple = Color(0xFF9b4ec3),
     error = Color(0xFFFF0032),
@@ -19,7 +19,8 @@ val baseLightPalette = OwnColors(
     blue = Color(0xFF5BC0F8),
     black = Color(0xFF191E23),
     definitionCard = Color(0xFFFF0032),
-    exampleCard = Color(0xFF5BC0F8)
+    exampleCard = Color(0xFF5BC0F8),
+    savedCard = Color(0xFF5BC0F8)
 )
 
 val baseDarkPalette = OwnColors(
@@ -27,7 +28,7 @@ val baseDarkPalette = OwnColors(
     primaryText = Color(0xFFF2F4F5),
     secondaryBackground = Color(0xFF191E23),
     secondaryText = Color(0xCC7A8A99),
-    tintColor = Color.Magenta,
+    tintColor = Color(0xFF452256),
     backgroundInBackground = Color(0, 0, 0),
     purple = Color(0xFF452256),
     error = Color(0xFFCD0404),
@@ -36,7 +37,8 @@ val baseDarkPalette = OwnColors(
     blue = Color(0xFF0081C9),
     black = Color(0, 0, 0),
     definitionCard = Color(0xFFCD0404),
-    exampleCard = Color(0xFF0081C9)//TODO("set own color for card")
+    exampleCard = Color(0xFF0081C9),
+    savedCard = Color(0xFF0081C9)
 )
 
 val purpleLightPalette = baseLightPalette.copy(
@@ -118,17 +120,18 @@ class CustomColor(settingsSharedPreferences: SettingsSharedPreferences) : Custom
         green = Color(settingsViewModel.greenDark.value),
         blue = Color(settingsViewModel.blueDark.value),
         black = Color(settingsViewModel.blackDark.value),
-        definitionCard = Color(settingsViewModel.definitionCard.value),
-        exampleCard = Color(settingsViewModel.exampleCard.value)
+        definitionCard = Color(settingsViewModel.definitionCardDark.value),
+        exampleCard = Color(settingsViewModel.exampleCardDark.value),
+        savedCard = Color(settingsViewModel.savedCardDark.value)
     )
 }
 
 enum class CustomColorName {
     CustomThemePrimaryText, CustomThemePrimaryBackground, CustomThemeSecondaryText, CustomThemeSecondaryBackground,
     CustomThemeTintColor, CustomThemeBackgroundInBackground, CustomThemePurple, CustomThemeRed, CustomThemeError,
-    CustomThemeGreen, CustomThemeBlue, CustomThemeBlack, CustomThemeDefinitionCard, CustomThemeExampleCard
+    CustomThemeGreen, CustomThemeBlue, CustomThemeBlack, CustomThemeDefinitionCard, CustomThemeExampleCard, CustomThemeSavedCard
 }
 
-//val customLightPalette = CustomColor().customPalette
-
-val customDarkPalette = baseDarkPalette
+enum class CustomTextSize {
+    CustomTextSizeGeneral
+}

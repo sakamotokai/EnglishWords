@@ -31,6 +31,7 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.example.englishwords.db.room.Modeldb
 import com.example.englishwords.models.retrofitModels.CompletedResult
 import com.example.englishwords.navigation.Screen
@@ -60,7 +61,6 @@ fun WordKeepedScreen() {
             var startList = 0
             var endList = rangeForHandling - 1
             repeat(allRoomWords.value!!.size / rangeForHandling) {
-                Log.e("Log", "Redefine")
                 scope.launch(Dispatchers.Default) {
                     for (i in startList..endList) {
                         item {
@@ -78,16 +78,16 @@ fun WordKeepedScreen() {
             }
             scope.launch {
                 startList =
-                    if (allRoomWords.value!!.size > rangeForHandling - 1) allRoomWords.value!!.size - endList + rangeForHandling else 0
+                    if (allRoomWords.value!!.size > rangeForHandling/* - 1*/) allRoomWords.value!!.size - endList + rangeForHandling else 0
                 endList = allRoomWords.value!!.size - 1
-                if (endList - startList > 0 && endList < allRoomWords.value!!.size)
+                if (endList - startList >= 0 && endList < allRoomWords.value!!.size)
                     scope.launch(Dispatchers.Default) {
                         for (i in startList..endList) {
                             item {
                                 val item = allRoomWords.value!![i]
                                 WordKeepedCard(
                                     item = item.word,
-                                    color = OwnTheme.colors.blue,
+                                    color = OwnTheme.colors.savedCard,
                                     roomData = item
                                 )
                             }
@@ -98,7 +98,6 @@ fun WordKeepedScreen() {
     }
 }
 
-@OptIn(ExperimentalAnimationApi::class)
 @SuppressLint(
     "UnusedMaterial3ScaffoldPaddingParameter", "SuspiciousIndentation",
     "UnrememberedMutableState"
@@ -125,7 +124,8 @@ fun WordKeepedCard(
                 modifier = Modifier
                     .clickable {
                         mainViewModel.deleteByName(item)
-                    })
+                    },
+                fontSize = OwnTheme.typography.general.fontSize.value.sp)
                 Text(
                     text = item,
                     textAlign = TextAlign.Center,
@@ -134,7 +134,8 @@ fun WordKeepedCard(
                         .fillMaxWidth()
                         .clickable {
                             animationValue = !animationValue
-                        }
+                        },
+                    fontSize = OwnTheme.typography.general.fontSize.value.sp
                 )
         }
         AnimatedVisibility(
@@ -179,23 +180,27 @@ fun WordKeepedCardContent(roomData: Modeldb) {
         Spacer(modifier = Modifier.height(OwnTheme.dp.normalDp))
         Text(
             text = "Definitions:",
-            color = OwnTheme.colors.primaryText
+            color = OwnTheme.colors.primaryText,
+            fontSize = OwnTheme.typography.general.fontSize.value.sp
         )
         roomData.definitions.forEach { definition ->
             Text(
                 text = definition,
-                color = OwnTheme.colors.primaryText
+                color = OwnTheme.colors.primaryText,
+                fontSize = OwnTheme.typography.general.fontSize.value.sp
             )
             Spacer(modifier = Modifier.height(OwnTheme.dp.normalDp))
         }
         Text(
             text = "Examples:",
-            color = OwnTheme.colors.primaryText
+            color = OwnTheme.colors.primaryText,
+            fontSize = OwnTheme.typography.general.fontSize.value.sp
         )
         roomData.examples.forEach { example ->
             Text(
                 text = example,
-                color = OwnTheme.colors.primaryText
+                color = OwnTheme.colors.primaryText,
+                fontSize = OwnTheme.typography.general.fontSize.value.sp
             )
             Spacer(modifier = Modifier.height(OwnTheme.dp.normalDp))
         }

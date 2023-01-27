@@ -13,6 +13,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.example.englishwords.navigation.Screen
 import com.example.englishwords.ui.theme.ownTheme.OwnTheme
@@ -82,7 +83,8 @@ fun DrawerCard(item: Screen, navController: NavHostController,scaffoldState: Sca
             Text(
                 text = item.route,
                 color = OwnTheme.colors.primaryText,
-                style = LocalTextStyle.current.copy(textAlign = TextAlign.Center)
+                style = LocalTextStyle.current.copy(textAlign = TextAlign.Center),
+                fontSize = OwnTheme.typography.general.fontSize.value.sp
             )
         }
     }

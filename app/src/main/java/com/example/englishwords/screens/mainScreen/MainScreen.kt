@@ -9,9 +9,6 @@ import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.Orientation
-import androidx.compose.foundation.gestures.awaitFirstDown
-import androidx.compose.foundation.gestures.horizontalDrag
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -19,46 +16,30 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.ClickableText
-import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Build
-import androidx.compose.material.icons.filled.Call
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material.swipeable
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.composed
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.input.pointer.consumePositionChange
-import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.input.pointer.positionChange
-import androidx.compose.ui.input.pointer.util.VelocityTracker
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
-import androidx.room.Dao
+import androidx.compose.ui.unit.sp
 import com.example.englishwords.SharedPreferencesEnum
-import com.example.englishwords.db.room.Daodb
 import com.example.englishwords.db.room.Modeldb
 import com.example.englishwords.models.retrofitModels.CompletedResult
-import com.example.englishwords.repositorys.Repository
-import com.example.englishwords.retrofit.RetrofitInstance
 import com.example.englishwords.screens.mainScreen.MainScreenViewModel
 import com.example.englishwords.ui.theme.ownTheme.OwnTheme
-import com.example.englishwords.viewModels.GlobalSettingsViewModel
 import com.example.englishwords.viewModels.MainViewModel
 import kotlinx.coroutines.*
 import org.koin.androidx.compose.get
 import org.koin.androidx.compose.getViewModel
 import org.koin.androidx.compose.koinViewModel
 import org.koin.core.parameter.parametersOf
-import kotlin.math.absoluteValue
-import kotlin.math.roundToInt
 
 @SuppressLint(
     "UnusedMaterial3ScaffoldPaddingParameter", "CommitPrefEdits",
@@ -67,7 +48,6 @@ import kotlin.math.roundToInt
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun MainScreen() {
-    Log.e("Log", "MainScreen")
     val sharedPreferences: SharedPreferences =
         get(parameters = { parametersOf(SharedPreferencesEnum.settings.route) })
     var isDarkmode: MutableState<Boolean> =
@@ -82,7 +62,6 @@ fun MainScreen() {
     val scope = rememberCoroutineScope()
     val completedResult = viewModel.completedResult.collectAsState()
     var urlToListening: String? by remember { mutableStateOf("") }
-    Log.e("Log", "Recomposing to based")
     val scale by animateFloatAsState(
         targetValue = if (animatedErrorButton) 1.1f else 1f,
         animationSpec = repeatable(
@@ -159,7 +138,7 @@ fun MainScreen() {
                             .shadow(5.dp, RoundedCornerShape(40)),
                         colors = ButtonDefaults.buttonColors(containerColor = OwnTheme.colors.purple)
                     ) {
-                        Text(text = "Search", color = OwnTheme.colors.primaryText)
+                        Text(text = "Search", color = OwnTheme.colors.primaryText,fontSize = OwnTheme.typography.general.fontSize.value.sp)
                     }
                 }
                 AnimatedVisibility(
@@ -215,7 +194,6 @@ fun ColumnOfContent(
     buttonWasClicked: Boolean,
     returnUrl: (result: String?) -> Unit
 ) {
-    Log.e("Log", "ColumnOnContent")
     if (viewModel.loading.value) CircularProgressIndicator(Modifier.fillMaxSize()) else {
         if (completedResult != null) {
             if (completedResult.isSuccess) {
@@ -251,27 +229,27 @@ fun SearchBar(
     returnEndPoint: (endPoint: String) -> Unit,
     moveButton: (result: Boolean) -> Unit
 ) {
-    Log.e("Log", "SearchBar")
-    var endPoint by remember {
+    var localEndPoint by remember {
         mutableStateOf(endPoint)
     }
     OutlinedTextField(
-        value = endPoint,
+        value = localEndPoint,
         onValueChange = {
-            endPoint = it
+            localEndPoint = it
             returnEndPoint(it)
             if (it.isEmpty()) moveButton(false)
         },
         modifier = Modifier
             .border(3.dp, color = OwnTheme.colors.tintColor, shape = CircleShape)
-            .height(50.dp)
-            .fillMaxSize()
+            .height(35.dp + OwnTheme.typography.general.fontSize.value.dp)
+            .fillMaxWidth()
             .shadow(5.dp, shape = CircleShape)
             .background(color = OwnTheme.colors.secondaryBackground),
         shape = CircleShape,
         textStyle = LocalTextStyle.current.copy(
             textAlign = TextAlign.Center,
-            color = OwnTheme.colors.primaryText
+            color = OwnTheme.colors.primaryText,
+            fontSize = OwnTheme.typography.general.fontSize.value.sp
         ),
         placeholder = {
             Text(
@@ -279,7 +257,8 @@ fun SearchBar(
                 text = "Enter your word",
                 style = LocalTextStyle.current.copy(
                     textAlign = TextAlign.Center,
-                    color = OwnTheme.colors.secondaryText
+                    color = OwnTheme.colors.secondaryText,
+                    fontSize = OwnTheme.typography.general.fontSize.value.sp
                 )
             )
         }
@@ -291,7 +270,6 @@ fun ShowCard(
     completedResult: CompletedResult?
 ) {
     val mainViewModel: MainViewModel = get()
-    Log.e("Log", "ShowCard")
     LazyColumn(
         modifier = Modifier
             .background(
@@ -313,11 +291,19 @@ fun ShowCard(
                 }
                 if (completedResult.definition != null)
                     items(completedResult.definition) { item ->
-                        MainCard(item = item, color = OwnTheme.colors.definitionCard, cardType = "Definition:")
+                        MainCard(
+                            item = item,
+                            color = OwnTheme.colors.definitionCard,
+                            cardType = "Definition:"
+                        )
                     }
                 if (completedResult.instance != null)
                     items(completedResult.instance) { item ->
-                        MainCard(item = item, color = OwnTheme.colors.exampleCard, cardType = "Instance:")
+                        MainCard(
+                            item = item,
+                            color = OwnTheme.colors.exampleCard,
+                            cardType = "Instance:"
+                        )
                     }
             }
     }
@@ -371,7 +357,7 @@ fun MainCard(
     ) {
         Column {
             if (cardType != "") {
-                Text(text = cardType, color = OwnTheme.colors.primaryText)
+                Text(text = cardType, color = OwnTheme.colors.primaryText,fontSize = OwnTheme.typography.general.fontSize.value.sp)
             }
             var localText by remember { mutableStateOf("Save") }
             val text = AnnotatedString(item)
@@ -395,7 +381,7 @@ fun MainCard(
                                         mainViewModel.insert(localModeldb)
                                     }
                                 }
-                            })
+                            },fontSize = OwnTheme.typography.general.fontSize.value.sp)
                 ClickableText(
                     text = text,
                     onClick = { offset ->
@@ -415,10 +401,11 @@ fun MainCard(
                     if (centerText)
                         LocalTextStyle.current.copy(
                             textAlign = TextAlign.Center,
-                            color = OwnTheme.colors.primaryText
+                            color = OwnTheme.colors.primaryText,
+                            fontSize = OwnTheme.typography.general.fontSize.value.sp
                         )
                     else
-                        LocalTextStyle.current.copy(color = OwnTheme.colors.primaryText)
+                        LocalTextStyle.current.copy(color = OwnTheme.colors.primaryText,fontSize = OwnTheme.typography.general.fontSize.value.sp)
                 )
             }
 
@@ -430,7 +417,6 @@ fun MainCard(
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun WindowAboveCard(word: String?, mainScreenViewModel: MainScreenViewModel = koinViewModel()) {
-    Log.e("Log", "WindowAboveCard")
     var wordInstance: String? by remember { mutableStateOf(word) }
     var visible by remember { mutableStateOf(true) }
     val viewModel = get<MainViewModel>()
