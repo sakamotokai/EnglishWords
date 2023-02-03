@@ -43,6 +43,7 @@ fun SettingsScreen(navController: NavHostController) {
         ) {
             Column {
                 SettingsThemeBox(navController)
+                SettingsNotificationBox(navController)
             }
         }
     }
@@ -52,6 +53,15 @@ fun SettingsScreen(navController: NavHostController) {
 fun SettingsThemeBox(navController: NavHostController){
     Spacer(modifier = Modifier.height(OwnTheme.dp.smallDp))
     SettingsElementCard(SettingsScreen.CustomTheme, endElement = {
+        SettingsArrowForward()
+    }, navController)
+    Spacer(modifier = Modifier.height(OwnTheme.dp.smallDp))
+}
+
+@Composable
+fun SettingsNotificationBox(navController: NavHostController){
+    Spacer(modifier = Modifier.height(OwnTheme.dp.smallDp))
+    SettingsElementCard(SettingsScreen.NotificationScreen, endElement = {
         SettingsArrowForward()
     }, navController)
     Spacer(modifier = Modifier.height(OwnTheme.dp.smallDp))

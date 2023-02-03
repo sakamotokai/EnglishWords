@@ -17,6 +17,7 @@ import com.example.englishwords.screens.MainScreen
 import com.example.englishwords.screens.settingsScreen.SettingsScreen
 import com.example.englishwords.screens.settingsScreen.manageTheme.ManageTheme
 import com.example.englishwords.screens.settingsScreen.manageTheme.changeColor.ChangeColorScreen
+import com.example.englishwords.screens.settingsScreen.notifications.NotificationsScreen
 import com.example.englishwords.screens.wordKeepedScreen.WordKeepedScreen
 import com.example.englishwords.ui.theme.ownTheme.OwnTheme
 import com.example.englishwords.viewModels.GlobalSettingsViewModel
@@ -32,6 +33,7 @@ sealed class Screen(val route: String, val icon: ImageVector) {
 sealed class SettingsScreen(val route: String,val icon:ImageVector){
     object CustomTheme :SettingsScreen(route = "Manage theme",icon = Icons.Filled.Build)
     object ChangeColor :SettingsScreen(route = "Change Color", icon = Icons.Filled.Phone)
+    object NotificationScreen:SettingsScreen(route = "Notification",icon = Icons.Filled.Notifications)
 }
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter", "ComposableDestinationInComposeScope")
@@ -57,6 +59,9 @@ fun Navigation(
         }
         composable(SettingsScreen.ChangeColor.route){
             ChangeColorScreen(navController)
+        }
+        composable(SettingsScreen.NotificationScreen.route){
+            NotificationsScreen()
         }
     }
 }

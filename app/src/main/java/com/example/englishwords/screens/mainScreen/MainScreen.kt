@@ -40,10 +40,13 @@ import org.koin.androidx.compose.get
 import org.koin.androidx.compose.getViewModel
 import org.koin.androidx.compose.koinViewModel
 import org.koin.core.parameter.parametersOf
+import java.text.SimpleDateFormat
+import java.time.LocalDate
+import java.util.*
 
 @SuppressLint(
     "UnusedMaterial3ScaffoldPaddingParameter", "CommitPrefEdits",
-    "UnrememberedMutableState"
+    "UnrememberedMutableState", "SimpleDateFormat"
 )
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
@@ -84,6 +87,10 @@ fun MainScreen() {
     val animatedFloat by animateFloatAsState(
         targetValue = if (urlToListening == null) 3f else 0f
     )
+    val sdf = SimpleDateFormat("dd/MM/yy hh:mm:ss")
+    val currentData = sdf.format(Date())
+    //TODO("Keep data of added and remove word after 7 day or other(do can set up it)")
+    //keep "for time" in sharedPref
     AnimatedContent(
         targetState = isDarkmode.value,
         transitionSpec = { fadeIn() with fadeOut() }
@@ -138,7 +145,11 @@ fun MainScreen() {
                             .shadow(5.dp, RoundedCornerShape(40)),
                         colors = ButtonDefaults.buttonColors(containerColor = OwnTheme.colors.purple)
                     ) {
-                        Text(text = "Search", color = OwnTheme.colors.primaryText,fontSize = OwnTheme.typography.general.fontSize.value.sp)
+                        Text(
+                            text = "Search",
+                            color = OwnTheme.colors.primaryText,
+                            fontSize = OwnTheme.typography.general.fontSize.value.sp
+                        )
                     }
                 }
                 AnimatedVisibility(
@@ -176,7 +187,7 @@ fun MainScreen() {
                     }
                 }
             }
-            ColumnOfContent(
+            ColumnOfContentSurface(
                 viewModel = viewModel,
                 completedResult = completedResult.value,
                 buttonWasClicked = buttonWasClicked,
@@ -188,7 +199,7 @@ fun MainScreen() {
 
 @SuppressLint("CoroutineCreationDuringComposition")
 @Composable
-fun ColumnOfContent(
+fun ColumnOfContentSurface(
     viewModel: MainViewModel,
     completedResult: CompletedResult?,
     buttonWasClicked: Boolean,
@@ -329,14 +340,11 @@ fun MainCard(
         LaunchedEffect(key1 = scope, block = {
             scope.launch(Dispatchers.Default) {
                 word = item.split(" ")
-                Log.e("Log", word[2])
                 goalWord = mainScreenViewModel.checkGoalWord(word[2])
             }
         })
     }
-    Log.e("Log", "Card")
     var sentence: String? by remember { mutableStateOf(null) }
-    Log.e("Log", "---------${goalWord}--------")
     if (sentence != null)
         WindowAboveCard(
             word = sentence!!
@@ -357,7 +365,11 @@ fun MainCard(
     ) {
         Column {
             if (cardType != "") {
-                Text(text = cardType, color = OwnTheme.colors.primaryText,fontSize = OwnTheme.typography.general.fontSize.value.sp)
+                Text(
+                    text = cardType,
+                    color = OwnTheme.colors.primaryText,
+                    fontSize = OwnTheme.typography.general.fontSize.value.sp
+                )
             }
             var localText by remember { mutableStateOf("Save") }
             val text = AnnotatedString(item)
@@ -370,6 +382,7 @@ fun MainCard(
                                 localText = ""
                                 if (completedResult.word.isNotEmpty()) {
                                     scope.launch {
+                                        val localDate = LocalDate.now()
                                         val localModeldb: Modeldb = Modeldb()
                                         localModeldb.definitions =
                                             completedResult.definition ?: listOf("No Data")
@@ -378,10 +391,16 @@ fun MainCard(
                                         localModeldb.linkToSound =
                                             completedResult.urlToListening ?: ""
                                         localModeldb.word = completedResult.word
+                                        localModeldb.data = listOf(
+                                            localDate.dayOfMonth.toString(),
+                                            localDate.month.toString(),
+                                            localDate.year.toString()
+                                        )
                                         mainViewModel.insert(localModeldb)
                                     }
                                 }
-                            },fontSize = OwnTheme.typography.general.fontSize.value.sp)
+                            }, fontSize = OwnTheme.typography.general.fontSize.value.sp
+                    )
                 ClickableText(
                     text = text,
                     onClick = { offset ->
@@ -405,7 +424,10 @@ fun MainCard(
                             fontSize = OwnTheme.typography.general.fontSize.value.sp
                         )
                     else
-                        LocalTextStyle.current.copy(color = OwnTheme.colors.primaryText,fontSize = OwnTheme.typography.general.fontSize.value.sp)
+                        LocalTextStyle.current.copy(
+                            color = OwnTheme.colors.primaryText,
+                            fontSize = OwnTheme.typography.general.fontSize.value.sp
+                        )
                 )
             }
 
@@ -425,11 +447,9 @@ fun WindowAboveCard(word: String?, mainScreenViewModel: MainScreenViewModel = ko
         wordInstance = word
     }
     if (word != null) {
-        Log.e("Log", "WindowAboveCard2")
         viewModel.getCompletedResult(word)
         val completedResult = viewModel.completedResult.collectAsState()
         AnimatedVisibility(visible = visible) {//TODO("to do animation in other coroutine like i do in keepedscreen")
-            Log.e("Log", "WindowAboveCard3")
             Column(
                 modifier = Modifier
                     .fillMaxHeight()
@@ -438,21 +458,20 @@ fun WindowAboveCard(word: String?, mainScreenViewModel: MainScreenViewModel = ko
                         shape = OwnTheme.sizesShapes.smallShape
                     )
             ) {
-                Log.e("Log", "WindowAboveCard4")
                 Row(
                     modifier = Modifier
                         .fillMaxWidth(),
                     horizontalArrangement = Arrangement.End
                 ) {
                     Icon(
-                        Icons.Filled.Close,
-                        null,
+                        imageVector = Icons.Filled.Close,
+                        contentDescription = null,
                         modifier = Modifier
                             .clickable {
                                 visible = false
                                 mainScreenViewModel.aboveCardState.value = null
-                            }
-                            .background(OwnTheme.colors.tintColor, shape = CircleShape)
+                            },
+                        tint = OwnTheme.colors.tintColor
                     )
                 }
                 if (viewModel.loading.value) {

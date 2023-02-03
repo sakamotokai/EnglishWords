@@ -7,6 +7,8 @@ import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyItemScope
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -46,8 +48,11 @@ import org.koin.androidx.compose.koinViewModel
 fun ChangeColorScreen(navController: NavHostController) {
     val globalSettingsViewModel: GlobalSettingsViewModel = get()
     val settingsViewModel: SettingsViewModel = get()
-    Column {
-        ChangeColorChangeColor(settingsViewModel,globalSettingsViewModel)
+    Column(
+        Modifier.verticalScroll(rememberScrollState())
+    ) {
+        Spacer(modifier = Modifier.height(OwnTheme.dp.mediumDp))
+        ChangeColorChangeColor(settingsViewModel, globalSettingsViewModel)
         Spacer(modifier = Modifier.height(OwnTheme.dp.normalDp))
         ChangeColorTextSizeBox(settingsViewModel)
         Spacer(modifier = Modifier.height(OwnTheme.dp.normalDp))
@@ -59,7 +64,10 @@ fun ChangeColorScreen(navController: NavHostController) {
 }
 
 @Composable
-fun ChangeColorChangeColor(settingsViewModel: SettingsViewModel,globalSettingsViewModel: GlobalSettingsViewModel) {
+fun ChangeColorChangeColor(
+    settingsViewModel: SettingsViewModel,
+    globalSettingsViewModel: GlobalSettingsViewModel
+) {
     var RGBRed by remember { mutableStateOf(0f) }
     var RGBGreen by remember { mutableStateOf(0f) }
     var RGBBlue by remember { mutableStateOf(0f) }
@@ -88,17 +96,26 @@ fun ChangeColorChangeColor(settingsViewModel: SettingsViewModel,globalSettingsVi
             Slider(
                 value = RGBRed,
                 onValueChange = { RGBRed = it },
-                colors = SliderDefaults.colors(thumbColor = OwnTheme.colors.red, activeTrackColor = OwnTheme.colors.red)
+                colors = SliderDefaults.colors(
+                    thumbColor = OwnTheme.colors.red,
+                    activeTrackColor = OwnTheme.colors.red
+                )
             )
             Slider(
                 value = RGBGreen,
                 onValueChange = { RGBGreen = it },
-                colors = SliderDefaults.colors(thumbColor = OwnTheme.colors.green, activeTrackColor = OwnTheme.colors.green)
+                colors = SliderDefaults.colors(
+                    thumbColor = OwnTheme.colors.green,
+                    activeTrackColor = OwnTheme.colors.green
+                )
             )
             Slider(
                 value = RGBBlue,
                 onValueChange = { RGBBlue = it },
-                colors = SliderDefaults.colors(thumbColor = OwnTheme.colors.blue, activeTrackColor = OwnTheme.colors.blue)
+                colors = SliderDefaults.colors(
+                    thumbColor = OwnTheme.colors.blue,
+                    activeTrackColor = OwnTheme.colors.blue
+                )
             )
             Row(Modifier.fillMaxWidth()) {
                 Row {
@@ -109,13 +126,13 @@ fun ChangeColorChangeColor(settingsViewModel: SettingsViewModel,globalSettingsVi
                         { itemOfList = it }
                     )
                 }
-                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End){
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
                     ChangeColorSaveColorChanged(
                         isDarkMode = globalSettingsViewModel.isDarkMode.collectAsState().value,
                         itemName = itemName,
                         itemOfList = itemOfList,
                         settingsViewModel = settingsViewModel,
-                        color = Color(red = RGBRed, green = RGBGreen,blue = RGBBlue)
+                        color = Color(red = RGBRed, green = RGBGreen, blue = RGBBlue)
                     )
                 }
             }
@@ -164,7 +181,7 @@ fun ColorChangeWordKeepedCard(
 @Composable
 fun ChangeColorDefExamCard(
     color: Color,
-    cardType:String
+    cardType: String
 ) {
     Box(
         modifier = Modifier
@@ -175,11 +192,11 @@ fun ChangeColorDefExamCard(
             .padding(start = 20.dp, end = 10.dp)
     ) {
         Column {
-                androidx.compose.material3.Text(
-                    text = cardType,
-                    color = OwnTheme.colors.primaryText,
-                    fontSize = OwnTheme.typography.general.fontSize.value.sp
-                )
+            androidx.compose.material3.Text(
+                text = cardType,
+                color = OwnTheme.colors.primaryText,
+                fontSize = OwnTheme.typography.general.fontSize.value.sp
+            )
             Spacer(modifier = Modifier.height(OwnTheme.dp.mediumDp))
         }
     }
@@ -189,18 +206,18 @@ fun ChangeColorDefExamCard(
 fun ChangeColorSaveColorChanged(
     isDarkMode: Boolean,
     itemName: String,
-    itemOfList:List<String>,
+    itemOfList: List<String>,
     settingsViewModel: SettingsViewModel,
     color: Color
-){
+) {
     Text(
         text = "Save color",
         fontSize = OwnTheme.typography.general.fontSize,
         color = OwnTheme.colors.primaryText,
         modifier = Modifier
             .clickable {
-                if(isDarkMode)
-                    when(itemName){
+                if (isDarkMode)
+                    when (itemName) {
                         itemOfList[0] -> {
                             settingsViewModel.setTintDark(color.value.toLong())
                         }
@@ -215,7 +232,7 @@ fun ChangeColorSaveColorChanged(
                         }
                     }
                 else
-                    when(itemName){
+                    when (itemName) {
                         itemOfList[0] -> {
                             settingsViewModel.setTint(color.value.toLong())
                         }
@@ -240,7 +257,8 @@ fun ChangeColorExpandedCard(
     returnListName: (List<String>) -> Unit
 ) {
     //if you changed localNameList you should edit ChangeColorChangeColorItem and ChangeColorSaveColorChanged
-    val localNameList: List<String> = listOf("Main color", "Definition color", "Example color","Saved word color")
+    val localNameList: List<String> =
+        listOf("Main color", "Definition color", "Example color", "Saved word color")
     var currentName by remember { mutableStateOf(localNameList[0]) }
     returnItemName(currentName)
     returnListName(localNameList)
@@ -373,6 +391,7 @@ fun ChangeColorColorThemeBox(
     settingsViewModel: SettingsViewModel,
     globalSettingsViewModel: GlobalSettingsViewModel
 ) {
+    val scope = rememberCoroutineScope()
     val isDarkMode = globalSettingsViewModel.isDarkMode.collectAsState()
     Box(
         modifier = Modifier
@@ -393,10 +412,10 @@ fun ChangeColorColorThemeBox(
                 fontSize = OwnTheme.typography.general.fontSize.value.sp
             )
             Spacer(modifier = Modifier.height(OwnTheme.dp.normalDp))
-            Row(
+            LazyRow(
                 Modifier
                     .fillMaxWidth()
-                    .horizontalScroll(rememberScrollState())
+                    //.horizontalScroll(rememberScrollState())
                     .background(OwnTheme.colors.primaryBackground)
                     .padding(
                         top = OwnTheme.dp.smallDp,
@@ -404,10 +423,14 @@ fun ChangeColorColorThemeBox(
                         bottom = OwnTheme.dp.smallDp
                     )
             ) {
-                ChangeColorColorThemeLine(
-                    isDarkMode = isDarkMode.value,
-                    settingsViewModel = settingsViewModel
-                )
+                scope.launch(Dispatchers.Default) {
+                    item {
+                        ChangeColorColorThemeLine(
+                            isDarkMode = isDarkMode.value,
+                            settingsViewModel = settingsViewModel
+                        )
+                    }
+                }
             }
             Spacer(modifier = Modifier.height(OwnTheme.dp.bigDp))
         }

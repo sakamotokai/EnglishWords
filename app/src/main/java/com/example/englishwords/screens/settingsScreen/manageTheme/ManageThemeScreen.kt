@@ -111,7 +111,6 @@ fun ManageScreenTransferElementCard(
             .fillMaxWidth()
             .customClickable {
                 navController.navigate(settingsElement.route)
-                Log.e("Log", "Click CLick")
             }
             .height(OwnTheme.dp.bigDp)
     ) {

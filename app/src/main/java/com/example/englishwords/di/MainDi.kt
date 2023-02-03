@@ -3,16 +3,20 @@ package com.example.englishwords.di
 import android.content.Context
 import com.example.englishwords.SharedPreferencesEnum
 import com.example.englishwords.db.room.Database
+import com.example.englishwords.models.preferencesModels.MessageSharedPreferences
 import com.example.englishwords.models.preferencesModels.SettingsSharedPreferences
+import com.example.englishwords.notifications.SendNotificationReceiverImpl
 import com.example.englishwords.repositorys.Repository
 import com.example.englishwords.retrofit.RetrofitInstance
 import com.example.englishwords.screens.mainScreen.MainScreenViewModel
 import com.example.englishwords.screens.settingsScreen.SettingsViewModel
+import com.example.englishwords.screens.settingsScreen.notifications.NotificationViewModel
 import com.example.englishwords.screens.wordKeepedScreen.WordKeepedViewModel
 import com.example.englishwords.ui.theme.ownTheme.CustomColor
 import com.example.englishwords.viewModels.DrawerViewModel
 import com.example.englishwords.viewModels.GlobalSettingsViewModel
 import com.example.englishwords.viewModels.MainViewModel
+import com.example.englishwords.viewModels.MessageViewModel
 import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.androidx.viewmodel.dsl.viewModelOf
 import org.koin.core.module.dsl.singleOf
@@ -27,12 +31,23 @@ var mainDi = module {
             Context.MODE_PRIVATE
         )
     }
+    single {
+        val context: Context = get()
+        context.getSharedPreferences(
+            SharedPreferencesEnum.message.route,
+            Context.MODE_PRIVATE
+        )
+    }
     singleOf(::SettingsSharedPreferences)
+    singleOf(::MessageSharedPreferences)
 }
 
 var otherModule = module {
     single{
         CustomColor(get())
+    }
+    single{
+        SendNotificationReceiverImpl(get())
     }
 }
 
@@ -54,6 +69,12 @@ var viewModelsModule = module{
     single{SettingsViewModel(get())}
     single{
         GlobalSettingsViewModel(get())
+    }
+    single{
+       MessageViewModel(get())
+    }
+    single{
+        NotificationViewModel(get())
     }
 }
 

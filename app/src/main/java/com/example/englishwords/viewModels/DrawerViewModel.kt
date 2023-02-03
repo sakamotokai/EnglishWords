@@ -14,12 +14,6 @@ import kotlinx.coroutines.flow.callbackFlow
 
 class DrawerViewModel:ViewModel() {
 
-    init {
-
-        Log.e("Log","DrawerViewModel")
-
-    }
-
     private var _drawerState: MutableStateFlow<Boolean> = MutableStateFlow(false)
     var drawerState: StateFlow<Boolean> = _drawerState
 

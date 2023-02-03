@@ -17,10 +17,7 @@ import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Call
-import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.Icon
-import androidx.compose.material3.LocalTextStyle
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -119,29 +116,31 @@ fun WordKeepedCard(
             .padding(start = 20.dp, end = 10.dp, top = OwnTheme.dp.normalDp)
     ) {
         Row(Modifier.fillMaxWidth()) {
-            Text(text = "delete",
+            Text(
+                text = "delete",
                 color = OwnTheme.colors.primaryText,
                 modifier = Modifier
                     .clickable {
                         mainViewModel.deleteByName(item)
                     },
-                fontSize = OwnTheme.typography.general.fontSize.value.sp)
-                Text(
-                    text = item,
-                    textAlign = TextAlign.Center,
-                    color = OwnTheme.colors.primaryText,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable {
-                            animationValue = !animationValue
-                        },
-                    fontSize = OwnTheme.typography.general.fontSize.value.sp
-                )
+                fontSize = OwnTheme.typography.general.fontSize.value.sp
+            )
+            Text(
+                text = item,
+                textAlign = TextAlign.Center,
+                color = OwnTheme.colors.primaryText,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable {
+                        animationValue = !animationValue
+                    },
+                fontSize = OwnTheme.typography.general.fontSize.value.sp
+            )
         }
         AnimatedVisibility(
             visible = animationValue,
         ) {
-            WordKeepedCardContent(roomData = roomData)
+            WordKeepedCardContent(roomData = roomData, mainViewModel)
         }
         Spacer(modifier = Modifier.height(OwnTheme.dp.normalDp))
     }
@@ -149,7 +148,7 @@ fun WordKeepedCard(
 }
 
 @Composable
-fun WordKeepedFloatingActionButton(linkToSound:String){
+fun WordKeepedFloatingActionButton(linkToSound: String) {
     val mediaPlayer = MediaPlayer()
     FloatingActionButton(
         onClick = {
@@ -172,11 +171,51 @@ fun WordKeepedFloatingActionButton(linkToSound:String){
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun WordKeepedCardContent(roomData: Modeldb) {
+fun WordKeepedCardContent(roomData: Modeldb, mainViewModel: MainViewModel) {
     Column {
+        val scope = rememberCoroutineScope()
+        var userText by remember { mutableStateOf(roomData.note ?: "") }
         Spacer(modifier = Modifier.height(OwnTheme.dp.normalDp))
-        WordKeepedFloatingActionButton(roomData.linkToSound)
+        Row(Modifier.fillMaxWidth()) {
+            WordKeepedFloatingActionButton(roomData.linkToSound)
+            TextField(//I don't know how do that trick with coroutine and delay in couple seconds
+                value = userText,
+                onValueChange = {
+                    userText = it
+                    //scope.launch {
+                        roomData.apply {
+                            mainViewModel.update(
+                                Modeldb(
+                                    id = id,
+                                    word = word,
+                                    linkToSound = linkToSound,
+                                    definitions = definitions,
+                                    examples = examples,
+                                    note = it
+                                )
+                            )
+                        //}
+                    }
+                },
+                Modifier.background(OwnTheme.colors.secondaryBackground),
+                colors = TextFieldDefaults.textFieldColors(
+                    textColor = OwnTheme.colors.primaryText,
+                    containerColor = OwnTheme.colors.secondaryBackground,
+                    focusedIndicatorColor = OwnTheme.colors.secondaryBackground,
+                    unfocusedIndicatorColor = OwnTheme.colors.secondaryBackground
+                ),
+                textStyle = TextStyle(fontSize = OwnTheme.typography.general.fontSize.value.sp),
+                placeholder = {
+                    Text(
+                        text = "You can add note by taping to here",
+                        color = OwnTheme.colors.secondaryText,
+                        fontSize = OwnTheme.typography.general.fontSize.value.sp
+                    )
+                }
+            )
+        }
         Spacer(modifier = Modifier.height(OwnTheme.dp.normalDp))
         Text(
             text = "Definitions:",

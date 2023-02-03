@@ -17,3 +17,13 @@ class SettingsSharedPreferences(override val context: Context):BasePreferencesMo
         )
     }
 }
+
+class MessageSharedPreferences(override val context: Context):BasePreferencesModel{
+    override fun getPreferences(): SharedPreferences {
+        return context.getSharedPreferences(
+            SharedPreferencesEnum.message.route,
+            Context.MODE_PRIVATE
+        )
+    }
+
+}

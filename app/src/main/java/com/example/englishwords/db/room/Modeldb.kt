@@ -14,6 +14,8 @@ interface ModelRoomDatabase {
     var linkToSound: String
     var definitions: List<String>
     var examples: List<String>
+    var note:String
+    var data:List<String>
 }
 
 interface ModelWorkedRoomDatabase{
@@ -22,6 +24,8 @@ interface ModelWorkedRoomDatabase{
     var linkToSound: String
     var definitions: MutableList<String>
     var examples: MutableList<String>
+    var note:String
+    var data:MutableList<String>
 }
 
 data class ModeldbWorkerClass(
@@ -29,7 +33,9 @@ data class ModeldbWorkerClass(
     override var word: String,
     override var linkToSound: String,
     override var definitions: MutableList<String>,
-    override var examples: MutableList<String>
+    override var examples: MutableList<String>,
+    override var note: String,
+    override var data: MutableList<String>
 ):ModelWorkedRoomDatabase
 
 @Entity(tableName = "wordKeeper")
@@ -41,5 +47,7 @@ class Modeldb(
     override var word: String = "",
     override var linkToSound: String = "",
     override var definitions: List<String> = listOf(),
-    override var examples: List<String> = listOf()
+    override var examples: List<String> = listOf(),
+    override var note: String = "",
+    override var data: List<String> = listOf()
 ) : ModelRoomDatabase

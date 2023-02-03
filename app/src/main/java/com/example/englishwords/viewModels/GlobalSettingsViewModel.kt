@@ -1,9 +1,6 @@
 package com.example.englishwords.viewModels
 
 
-import android.content.SharedPreferences
-import android.util.Log
-import androidx.compose.runtime.MutableState
 import androidx.lifecycle.ViewModel
 import com.example.englishwords.models.preferencesModels.SettingsSharedPreferences
 import com.example.englishwords.ui.theme.ownTheme.OwnTheme
@@ -12,9 +9,6 @@ import kotlinx.coroutines.flow.StateFlow
 import org.koin.core.parameter.parametersOf
 
 class GlobalSettingsViewModel(private val sharedPreferencesModel: SettingsSharedPreferences):ViewModel() {
-    init {
-        Log.e("Log", "Setting Screen Create")
-    }
 
     private var _mainDrawerGesturesEnabled:MutableStateFlow<Boolean> = MutableStateFlow(true)
     var mainDrawerGesturesEnabled:StateFlow<Boolean> = _mainDrawerGesturesEnabled
@@ -36,6 +30,14 @@ class GlobalSettingsViewModel(private val sharedPreferencesModel: SettingsShared
 
     private var _isDarkMode:MutableStateFlow<Boolean> = MutableStateFlow<Boolean>(sharedPreferences.getBoolean("isDarkmode",false))
     val isDarkMode: StateFlow<Boolean> = _isDarkMode
+
+    private var _isAppOn:MutableStateFlow<Boolean> = MutableStateFlow<Boolean>(sharedPreferences.getBoolean("isAppOn",true))
+    val isAppOn: StateFlow<Boolean> = _isAppOn
+
+    fun setAppState(onOrOff:Boolean){
+        _isAppOn.value = onOrOff
+        sharedPreferences.edit().putBoolean("isAppOn", onOrOff).apply()
+    }
 
     fun changeOwnStyle(style:OwnTheme.OwnStyle){
         _ownStyle.value = style
