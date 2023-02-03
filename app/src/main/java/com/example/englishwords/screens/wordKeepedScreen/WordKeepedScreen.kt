@@ -24,11 +24,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.node.modifierElementOf
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.work.PeriodicWorkRequest
+import androidx.work.WorkManager
+import androidx.work.impl.WorkManagerImpl
 import com.example.englishwords.db.room.Modeldb
 import com.example.englishwords.models.retrofitModels.CompletedResult
 import com.example.englishwords.navigation.Screen
@@ -41,6 +45,7 @@ import kotlinx.coroutines.*
 import org.koin.androidx.compose.get
 import org.koin.androidx.compose.getViewModel
 import org.koin.androidx.compose.koinViewModel
+import java.util.concurrent.TimeUnit
 
 @Composable
 fun WordKeepedScreen() {
@@ -177,26 +182,28 @@ fun WordKeepedCardContent(roomData: Modeldb, mainViewModel: MainViewModel) {
     Column {
         val scope = rememberCoroutineScope()
         var userText by remember { mutableStateOf(roomData.note ?: "") }
+        DisposableEffect(key1 = scope){
+            return@DisposableEffect onDispose { roomData.apply {
+                mainViewModel.update(
+                    Modeldb(
+                        id = id,
+                        word = word,
+                        linkToSound = linkToSound,
+                        definitions = definitions,
+                        examples = examples,
+                        note = userText
+                    )
+                )
+            } }
+        }
         Spacer(modifier = Modifier.height(OwnTheme.dp.normalDp))
         Row(Modifier.fillMaxWidth()) {
             WordKeepedFloatingActionButton(roomData.linkToSound)
-            TextField(//I don't know how do that trick with coroutine and delay in couple seconds
+            TextField(
                 value = userText,
                 onValueChange = {
+                    scope.launch {
                     userText = it
-                    //scope.launch {
-                        roomData.apply {
-                            mainViewModel.update(
-                                Modeldb(
-                                    id = id,
-                                    word = word,
-                                    linkToSound = linkToSound,
-                                    definitions = definitions,
-                                    examples = examples,
-                                    note = it
-                                )
-                            )
-                        //}
                     }
                 },
                 Modifier.background(OwnTheme.colors.secondaryBackground),
