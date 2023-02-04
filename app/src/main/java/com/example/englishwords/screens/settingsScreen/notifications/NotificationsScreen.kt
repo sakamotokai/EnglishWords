@@ -91,7 +91,8 @@ fun NotificationScreenElementCard(endElement: @Composable () -> Unit, icon: Imag
         ) {
             Icon(
                 imageVector = icon,
-                contentDescription = null
+                contentDescription = null,
+                tint = OwnTheme.colors.tintColor
             )
             Spacer(modifier = Modifier.width(OwnTheme.dp.normalDp))
             Text(

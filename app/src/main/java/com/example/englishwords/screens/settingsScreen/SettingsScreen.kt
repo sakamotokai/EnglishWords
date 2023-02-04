@@ -5,18 +5,23 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowForward
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.*
 import androidx.navigation.NavHostController
+import androidx.navigation.compose.rememberNavController
 import com.example.englishwords.navigation.SettingsScreen
 import com.example.englishwords.screens.ourUiElements.CustomOutlinedTextField
 import com.example.englishwords.screens.ourUiElements.customClickable
+import com.example.englishwords.screens.settingsScreen.manageTheme.OwnToggleButton
 import com.example.englishwords.ui.theme.ownTheme.OwnTheme
+import org.koin.androidx.compose.get
 
 @Composable
 fun SettingsScreen(navController: NavHostController) {
@@ -27,8 +32,11 @@ fun SettingsScreen(navController: NavHostController) {
             textAlign = TextAlign.Start,
             modifier = Modifier
                 .padding(start = OwnTheme.dp.mediumDp),
-            style = OwnTheme.typography.heading.copy(color = OwnTheme.colors.primaryText, fontSize = (OwnTheme.typography.heading.fontSize.value +
-                    OwnTheme.typography.general.fontSize.value - 14f).sp)
+            style = OwnTheme.typography.heading.copy(
+                color = OwnTheme.colors.primaryText,
+                fontSize = (OwnTheme.typography.heading.fontSize.value +
+                        OwnTheme.typography.general.fontSize.value - 14f).sp
+            )
         )
         //Spacer(modifier = Modifier.height(OwnTheme.dp.normalDp))
         Spacer(modifier = Modifier.height(OwnTheme.dp.bigDp))
@@ -44,26 +52,59 @@ fun SettingsScreen(navController: NavHostController) {
             Column {
                 SettingsThemeBox(navController)
                 SettingsNotificationBox(navController)
+                SettingsDeleteWordBox(get())
             }
         }
     }
 }
 
 @Composable
-fun SettingsThemeBox(navController: NavHostController){
+fun SettingsThemeBox(navController: NavHostController) {
     Spacer(modifier = Modifier.height(OwnTheme.dp.smallDp))
-    SettingsElementCard(SettingsScreen.CustomTheme, endElement = {
-        SettingsArrowForward()
-    }, navController)
+    SettingsElementCard(
+        settingName = SettingsScreen.CustomTheme.route,
+        settingRoute = SettingsScreen.CustomTheme.route,
+        settingIcon = SettingsScreen.CustomTheme.icon,
+        endElement = {
+            SettingsArrowForward()
+        },
+        navController = navController
+    )
     Spacer(modifier = Modifier.height(OwnTheme.dp.smallDp))
 }
 
 @Composable
-fun SettingsNotificationBox(navController: NavHostController){
+fun SettingsNotificationBox(navController: NavHostController) {
     Spacer(modifier = Modifier.height(OwnTheme.dp.smallDp))
-    SettingsElementCard(SettingsScreen.NotificationScreen, endElement = {
-        SettingsArrowForward()
-    }, navController)
+    SettingsElementCard(
+        settingName = SettingsScreen.NotificationScreen.route,
+        endElement = {
+            SettingsArrowForward()
+        },
+        navController = navController,
+        settingRoute = SettingsScreen.NotificationScreen.route,
+        settingIcon = SettingsScreen.NotificationScreen.icon
+    )
+    Spacer(modifier = Modifier.height(OwnTheme.dp.smallDp))
+}
+
+@Composable
+fun SettingsDeleteWordBox(settingsScreenViewModel: SettingsViewModel) {
+    Spacer(modifier = Modifier.height(OwnTheme.dp.smallDp))
+    SettingsElementCard(
+        settingName = "Delete word after 7 days",
+        endElement = {
+            OwnToggleButton(
+                work = {
+                       settingsScreenViewModel.changeDeleteWordAfterState()
+                },
+                darkModeState = settingsScreenViewModel.deleteWordAfter.collectAsState().value
+            )
+        },
+        navController = null,
+        settingRoute = null,
+        settingIcon = Icons.Filled.Delete
+    )
     Spacer(modifier = Modifier.height(OwnTheme.dp.smallDp))
 }
 
@@ -78,6 +119,49 @@ fun SettingsArrowForward() {
 
 @Composable
 fun SettingsElementCard(
+    settingName: String,
+    settingIcon: ImageVector,
+    settingRoute: String?,
+    endElement: @Composable (() -> Unit),
+    navController: NavHostController? = null
+) {
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .customClickable {
+                navController?.navigate(settingRoute ?: "")
+            }
+            .height(OwnTheme.dp.bigDp)
+    ) {
+        Row(
+            modifier = Modifier.fillMaxHeight(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                imageVector = settingIcon,
+                contentDescription = settingRoute,
+                tint = OwnTheme.colors.tintColor
+            )
+            Spacer(modifier = Modifier.width(OwnTheme.dp.normalDp))
+            Text(
+                text = settingName,
+                color = OwnTheme.colors.primaryText,
+                fontSize = OwnTheme.typography.general.fontSize.value.sp
+            )
+        }
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.End,
+            modifier = Modifier
+                .fillMaxSize()
+        ) {
+            endElement()
+        }
+    }
+}
+
+@Composable
+fun SettingsElementCard2(
     settingsElement: SettingsScreen,
     endElement: @Composable (() -> Unit),
     navController: NavHostController

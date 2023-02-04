@@ -7,6 +7,7 @@ import kotlinx.coroutines.flow.StateFlow
 
 class NotificationViewModel(settingsSharedPreferences: MessageSharedPreferences) : ViewModel() {
     val messageSharedPreference = settingsSharedPreferences.getPreferences()
+
     private var _isRemindedNotifications: MutableStateFlow<Boolean> = MutableStateFlow(
        messageSharedPreference.getBoolean(
             SharedPreferencesNotifications.RemindedNotifications.name,

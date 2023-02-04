@@ -4,12 +4,15 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.util.Log
+import com.example.englishwords.screens.settingsScreen.SettingsViewModel
 import com.example.englishwords.viewModels.MainViewModel
 import org.koin.java.KoinJavaComponent.inject
 import java.time.LocalDate
 
 class DeleteOldWordReceiver:BroadcastReceiver() {
     override fun onReceive(context: Context?, intent: Intent?) {
+        val settingsViewModel by inject<SettingsViewModel>(SettingsViewModel::class.java)
+        if(!settingsViewModel.deleteWordAfter.value) return
         val mainViewModel by inject<MainViewModel>(MainViewModel::class.java)
             val allRoomData = mainViewModel.getAllRoomData.value
             val localDate = LocalDate.now()

@@ -77,7 +77,8 @@ fun DrawerCard(item: Screen, navController: NavHostController,scaffoldState: Sca
         ) {
             Icon(
                 imageVector = item.icon,
-                contentDescription = item.route
+                contentDescription = item.route,
+                tint = OwnTheme.colors.tintColor
             )
             Spacer(modifier = Modifier.width(OwnTheme.dp.normalDp))
             Text(

@@ -423,4 +423,17 @@ class SettingsViewModel(settingsSharedPreferences: SettingsSharedPreferences) : 
             .apply()
     }
 
+    private var _deleteWordAfter: MutableStateFlow<Boolean> = MutableStateFlow(
+        settingsSharedPreference.getBoolean(
+            "_deleteWordAfter",
+            true
+        )
+    )
+    var deleteWordAfter: StateFlow<Boolean> = _deleteWordAfter
+
+    fun changeDeleteWordAfterState() {
+        _deleteWordAfter.value = !_deleteWordAfter.value
+        settingsSharedPreference.edit().putBoolean("_deleteWordAfter", _deleteWordAfter.value)
+            .apply()
+    }
 }

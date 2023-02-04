@@ -84,7 +84,8 @@ fun ManageScreenElementCard(endElement: @Composable () -> Unit, icon: ImageVecto
         ) {
             Icon(
                 imageVector = icon,
-                contentDescription = null
+                contentDescription = null,
+                tint = OwnTheme.colors.tintColor
             )
             Spacer(modifier = Modifier.width(OwnTheme.dp.normalDp))
             Text(

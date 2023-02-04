@@ -25,54 +25,28 @@ import kotlinx.coroutines.*
 import org.koin.androidx.compose.get
 import org.koin.androidx.compose.getViewModel
 
+@SuppressLint("UnrememberedMutableState")
 @Composable
 fun WordKeepedScreen() {
     val mainViewModel: MainViewModel = get()
     mainViewModel.deleteEmptyWordFromRoom()
     mainViewModel.getAllFromRoom()
-    var allRoomWords = mainViewModel.getAllRoomData.collectAsState()
-    val rangeForHandling = 20//range must be no huge or i suppose logic can crash
+    val allRoomWordsCollection = mainViewModel.getAllRoomData.collectAsState()
     LazyColumn(Modifier.fillMaxSize()) {
         item {
             Spacer(modifier = Modifier.height(20.dp))
         }
-        val scope = CoroutineScope(SupervisorJob())
-        if (allRoomWords.value != null) {
-            var startList = 0
-            var endList = rangeForHandling - 1
-            repeat(allRoomWords.value!!.size / rangeForHandling) {
-                scope.launch(Dispatchers.Default) {
-                    for (i in startList..endList) {
-                        item {
-                            val item = allRoomWords.value!![i]
-                            WordKeepedCard(
-                                item = item.word,
-                                color = OwnTheme.colors.blue,
-                                roomData = item
-                            )
-                        }
-                    }
-                    startList += rangeForHandling
-                    endList += rangeForHandling
+        val allRoomWordsReverb = allRoomWordsCollection.value?.reversed()
+        if (allRoomWordsReverb != null) {
+            for(i in allRoomWordsReverb.indices){
+                item{
+                    val item = allRoomWordsReverb[i]
+                    WordKeepedCard(
+                        item = item.word,
+                        color = OwnTheme.colors.savedCard,
+                        roomData = item
+                    )
                 }
-            }
-            scope.launch {
-                startList =
-                    if (allRoomWords.value!!.size > rangeForHandling/* - 1*/) allRoomWords.value!!.size - endList + rangeForHandling else 0
-                endList = allRoomWords.value!!.size - 1
-                if (endList - startList >= 0 && endList < allRoomWords.value!!.size)
-                    scope.launch(Dispatchers.Default) {
-                        for (i in startList..endList) {
-                            item {
-                                val item = allRoomWords.value!![i]
-                                WordKeepedCard(
-                                    item = item.word,
-                                    color = OwnTheme.colors.savedCard,
-                                    roomData = item
-                                )
-                            }
-                        }
-                    }
             }
         }
     }
