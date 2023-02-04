@@ -1,4 +1,4 @@
-package com.example.englishwords.notifications.reminderNotification
+package com.example.englishwords.backgroundWork.notifications.reminderNotification
 
 import android.Manifest
 import android.app.PendingIntent
@@ -11,7 +11,6 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import com.example.englishwords.MainActivity
 import com.example.englishwords.screens.settingsScreen.notifications.NotificationViewModel
-import com.example.englishwords.viewModels.GlobalSettingsViewModel
 import com.example.englishwords.viewModels.MessageViewModel
 import org.koin.java.KoinJavaComponent
 import java.time.LocalTime
@@ -22,7 +21,7 @@ class ReminderNotificationReceiver() : BroadcastReceiver() {
         val notificationViewModel by KoinJavaComponent.inject<NotificationViewModel>(
             NotificationViewModel::class.java
         )
-        if (!notificationViewModel.isNotifications.value) return
+        if (!notificationViewModel.isRemindedNotifications.value) return
         val messageViewModel by KoinJavaComponent.inject<MessageViewModel>(MessageViewModel::class.java)
         if (messageViewModel.isAppOn.value) return
         //TODO("Check in future. It should works but i'm insecure")

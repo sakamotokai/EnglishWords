@@ -3,49 +3,27 @@ package com.example.englishwords.screens.wordKeepedScreen
 import android.annotation.SuppressLint
 import android.media.MediaPlayer
 import android.util.Log
-import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.ExperimentalAnimationApi
-import androidx.compose.animation.core.animateDpAsState
-import androidx.compose.animation.core.animateIntAsState
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.CornerSize
-import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Call
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.node.modifierElementOf
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.work.PeriodicWorkRequest
-import androidx.work.WorkManager
-import androidx.work.impl.WorkManagerImpl
 import com.example.englishwords.db.room.Modeldb
-import com.example.englishwords.models.retrofitModels.CompletedResult
-import com.example.englishwords.navigation.Screen
-import com.example.englishwords.screens.MainCard
-import com.example.englishwords.screens.WindowAboveCard
-import com.example.englishwords.screens.mainScreen.MainScreenViewModel
 import com.example.englishwords.ui.theme.ownTheme.OwnTheme
 import com.example.englishwords.viewModels.MainViewModel
 import kotlinx.coroutines.*
 import org.koin.androidx.compose.get
 import org.koin.androidx.compose.getViewModel
-import org.koin.androidx.compose.koinViewModel
-import java.util.concurrent.TimeUnit
 
 @Composable
 fun WordKeepedScreen() {
@@ -53,7 +31,7 @@ fun WordKeepedScreen() {
     mainViewModel.deleteEmptyWordFromRoom()
     mainViewModel.getAllFromRoom()
     var allRoomWords = mainViewModel.getAllRoomData.collectAsState()
-    val rangeForHandling = 20//range must be no huge or i think logic can crash
+    val rangeForHandling = 20//range must be no huge or i suppose logic can crash
     LazyColumn(Modifier.fillMaxSize()) {
         item {
             Spacer(modifier = Modifier.height(20.dp))
@@ -182,19 +160,21 @@ fun WordKeepedCardContent(roomData: Modeldb, mainViewModel: MainViewModel) {
     Column {
         val scope = rememberCoroutineScope()
         var userText by remember { mutableStateOf(roomData.note ?: "") }
-        DisposableEffect(key1 = scope){
-            return@DisposableEffect onDispose { roomData.apply {
-                mainViewModel.update(
-                    Modeldb(
-                        id = id,
-                        word = word,
-                        linkToSound = linkToSound,
-                        definitions = definitions,
-                        examples = examples,
-                        note = userText
+        DisposableEffect(key1 = scope) {
+            return@DisposableEffect onDispose {
+                roomData.apply {
+                    mainViewModel.update(
+                        Modeldb(
+                            id = id,
+                            word = word,
+                            linkToSound = linkToSound,
+                            definitions = definitions,
+                            examples = examples,
+                            note = userText
+                        )
                     )
-                )
-            } }
+                }
+            }
         }
         Spacer(modifier = Modifier.height(OwnTheme.dp.normalDp))
         Row(Modifier.fillMaxWidth()) {
@@ -203,7 +183,7 @@ fun WordKeepedCardContent(roomData: Modeldb, mainViewModel: MainViewModel) {
                 value = userText,
                 onValueChange = {
                     scope.launch {
-                    userText = it
+                        userText = it
                     }
                 },
                 Modifier.background(OwnTheme.colors.secondaryBackground),

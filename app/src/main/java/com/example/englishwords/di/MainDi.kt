@@ -2,10 +2,11 @@ package com.example.englishwords.di
 
 import android.content.Context
 import com.example.englishwords.SharedPreferencesEnum
+import com.example.englishwords.backgroundWork.DoReceiverImpl
 import com.example.englishwords.db.room.Database
 import com.example.englishwords.models.preferencesModels.MessageSharedPreferences
 import com.example.englishwords.models.preferencesModels.SettingsSharedPreferences
-import com.example.englishwords.notifications.SendNotificationReceiverImpl
+import com.example.englishwords.backgroundWork.notifications.SendNotificationReceiverImpl
 import com.example.englishwords.repositorys.Repository
 import com.example.englishwords.retrofit.RetrofitInstance
 import com.example.englishwords.screens.mainScreen.MainScreenViewModel
@@ -48,6 +49,9 @@ var otherModule = module {
     }
     single{
         SendNotificationReceiverImpl(get())
+    }
+    single{
+        DoReceiverImpl(get())
     }
 }
 

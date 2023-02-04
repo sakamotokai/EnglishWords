@@ -2,6 +2,7 @@ package com.example.englishwords.screens.settingsScreen.manageTheme
 
 import android.util.Log
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -36,7 +37,7 @@ fun ManageTheme(navController: NavHostController) {
         ) {
             Column {
                 Spacer(modifier = Modifier.height(OwnTheme.dp.normalDp))
-                ManageScreenDoElementCard(
+                ManageScreenElementCard(
                     icon = if (isDarkMode.value) Icons.Filled.Email else Icons.Filled.Search,
                     text = "Enable dark mode",
                     endElement = {
@@ -44,14 +45,13 @@ fun ManageTheme(navController: NavHostController) {
                             work = { globalSettingsViewModel.changeDarkMode() },
                             darkModeState = isDarkMode.value
                         )
-                    }
-                )
+                    })
                 Spacer(modifier = Modifier.height(OwnTheme.dp.normalDp))
-                ManageScreenTransferElementCard(
-                    settingsElement = SettingsScreen.ChangeColor,
-                    navController = navController,
-                    endElement = { SettingsArrowForward() }
-                )
+                ManageScreenElementCard(
+                    text = SettingsScreen.ChangeColor.route,
+                    onClick = { navController.navigate(SettingsScreen.ChangeColor.route)},
+                    endElement = { SettingsArrowForward() },
+                icon = SettingsScreen.ChangeColor.icon)
                 Spacer(modifier = Modifier.height(OwnTheme.dp.normalDp))
             }
         }
@@ -68,9 +68,12 @@ fun OwnToggleButton(work: () -> Unit, darkModeState: Boolean) {
 }
 
 @Composable
-fun ManageScreenDoElementCard(endElement: @Composable () -> Unit, icon: ImageVector, text: String) {
+fun ManageScreenElementCard(endElement: @Composable () -> Unit, icon: ImageVector, text: String,onClick:()->Unit = {}) {
     Row(
         Modifier
+            .clickable {
+                onClick()
+            }
             .fillMaxWidth()
             .height(OwnTheme.dp.bigDp)
             .padding(start = OwnTheme.dp.normalDp)
@@ -93,64 +96,10 @@ fun ManageScreenDoElementCard(endElement: @Composable () -> Unit, icon: ImageVec
         Row(
             horizontalArrangement = Arrangement.End,
             modifier = Modifier
-                .fillMaxWidth()
-        ) {
-            endElement()
-        }
-    }
-}
-
-@Composable
-fun ManageScreenTransferElementCard(
-    settingsElement: SettingsScreen,
-    endElement: @Composable (() -> Unit),
-    navController: NavHostController
-) {
-    Row(
-        Modifier
-            .fillMaxWidth()
-            .customClickable {
-                navController.navigate(settingsElement.route)
-            }
-            .height(OwnTheme.dp.bigDp)
-    ) {
-        Spacer(modifier = Modifier.width(OwnTheme.dp.normalDp))
-        Row(
-            modifier = Modifier.fillMaxHeight(),
+                .fillMaxSize(),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Icon(
-                imageVector = settingsElement.icon,
-                contentDescription = settingsElement.route
-            )
-            Spacer(modifier = Modifier.width(OwnTheme.dp.normalDp))
-            Text(
-                text = settingsElement.route,
-                color = OwnTheme.colors.primaryText,
-                fontSize = OwnTheme.typography.general.fontSize.value.sp
-            )
-        }
-        Row(
-            horizontalArrangement = Arrangement.End,
-            modifier = Modifier
-                .fillMaxWidth()
-        ) {
             endElement()
         }
     }
-}
-
-interface ColorListInterface {
-    var colorList: List<OwnTheme.OwnStyle>
-}
-
-class ColorListImpl : ColorListInterface {
-    override var colorList: List<OwnTheme.OwnStyle> =
-        listOf(
-            OwnTheme.OwnStyle.Black,
-            OwnTheme.OwnStyle.Green,
-            OwnTheme.OwnStyle.Blue,
-            OwnTheme.OwnStyle.Red,
-            OwnTheme.OwnStyle.Purple
-        )
 }

@@ -1,5 +1,6 @@
 package com.example.englishwords.viewModels
 
+import android.util.Log
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -8,13 +9,10 @@ import com.example.englishwords.db.room.Modeldb
 import com.example.englishwords.models.retrofitModels.CompletedResult
 import com.example.englishwords.repositorys.Repository
 import com.example.englishwords.retrofit.RetrofitInstance
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import org.koin.java.KoinJavaComponent.get
 
 class MainViewModel(
@@ -38,41 +36,67 @@ class MainViewModel(
 
     fun getCompletedResult(endPoint: String) {
         viewModelScope.launch {
-            loading.value = true
-            var data = async(Dispatchers.IO) {
-                repository.getWordDefinition(endPoint)
-            }.await()
-            _completedResult.value = withContext(Dispatchers.Default) {
-                if (data.isSuccessful) {
-                    var word: String? = null
-                    var definit: MutableList<String> = mutableListOf()
-                    var instanc: MutableList<String> = mutableListOf()
-                    var urlTo:String? = null
-                    data.body()!!.forEach { model ->
-                        word = model.word
-                        model.phonetics.forEach { url->
-                            urlTo = url.audio
-                        }
-                        model.meanings.forEach { meaning ->
-                            meaning.definitions.forEach { definition ->
-                                definit.add(definition.definition)
-                                if (definition.example != null)
-                                    instanc.add(definition.example)
+            try{
+                loading.value = true
+                var data = async(Dispatchers.IO) {
+                    repository.getWordDefinition(endPoint)
+                }.await()
+                Log.e("Log","after")
+                if(data == null) throw java.lang.Exception("Error of server page")
+                Log.e("Log","after ${data.isSuccessful}")
+                _completedResult.value = withContext(Dispatchers.Default) {
+                    if (data.isSuccessful) {
+                        var word: String? = null
+                        var definit: MutableList<String> = mutableListOf()
+                        var instanc: MutableList<String> = mutableListOf()
+                        var urlTo: String? = null
+                        data.body()!!.forEach { model ->
+                            word = model.word
+                            model.phonetics.forEach { url ->
+                                urlTo = url.audio
+                            }
+                            model.meanings.forEach { meaning ->
+                                meaning.definitions.forEach { definition ->
+                                    definit.add(definition.definition)
+                                    if (definition.example != null)
+                                        instanc.add(definition.example)
+                                }
                             }
                         }
+                        return@withContext CompletedResult(
+                            isSuccess = true,
+                            word = word,
+                            definition = definit,
+                            instance = instanc,
+                            urlToListening = urlTo
+                        )
+                    } else {
+                        return@withContext CompletedResult(
+                            isSuccess = false,
+                            null,
+                            null,
+                            null,
+                            null
+                        )
                     }
-                    return@withContext CompletedResult(
-                        isSuccess = true,
-                        word = word,
-                        definition = definit,
-                        instance = instanc,
-                        urlToListening = urlTo
-                    )
-                } else {
-                    return@withContext CompletedResult(isSuccess = false,null,null,null,null)
                 }
+                }catch (e:java.lang.Exception){
+                    Log.e("Log","ERROR: ${e.message}")
+                    Log.e("Log","ERROR: ${e.localizedMessage}")
+                    Log.e("Log","ERROR: ${e.printStackTrace()}")
+                    Log.e("Log","ERROR: ${e.fillInStackTrace()}")
+                    Log.e("Log","ERROR: ${e.suppressedExceptions}")
+                _completedResult.value = null/*CompletedResult(
+                    isSuccess = false,
+                    null,
+                    null,
+                    null,
+                    null
+                )*/
+                } finally {
+                    Log.e("Log","finally")
+                loading.value = false
             }
-            loading.value = false
         }
     }
     fun insert(modeldb: Modeldb){

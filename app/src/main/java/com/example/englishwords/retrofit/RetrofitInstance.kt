@@ -9,12 +9,14 @@ import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.create
 import retrofit2.http.GET
 import retrofit2.http.Path
+import java.util.concurrent.TimeUnit
 
 object RetrofitInstance {
     private val retrofit by lazy {
         Retrofit.Builder()
             .baseUrl("https://api.dictionaryapi.dev/api/v2/entries/en/")
             .addConverterFactory(GsonConverterFactory.create())
+            //.client(OkHttpClient.Builder().writeTimeout(5,TimeUnit.MINUTES).readTimeout(5,TimeUnit.MINUTES).build())
             .build()
     }
 

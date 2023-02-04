@@ -32,8 +32,9 @@
                 android:name="android.app.lib_name"
                 android:value="" />
         </activity>
-        <receiver android:name=".notifications.reminderNotification.ReminderNotificationReceiver"/>
-        <receiver android:name=".notifications.rememberWordNotification.RememberWordNotificationReceiver"/>
+        <receiver android:name=".backgroundWork.notifications.reminderNotification.ReminderNotificationReceiver"/>
+        <receiver android:name=".backgroundWork.notifications.rememberWordNotification.RememberWordNotificationReceiver"/>
+        <receiver android:name=".backgroundWork.deleteOldWord.DeleteOldWordReceiver"/>
     </application>
 
 </manifest>

@@ -1,4 +1,4 @@
-package com.example.englishwords.notifications.rememberWordNotification
+package com.example.englishwords.backgroundWork.notifications.rememberWordNotification
 
 import android.Manifest
 import android.app.PendingIntent
@@ -6,13 +6,11 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.util.Log
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import com.example.englishwords.MainActivity
 import com.example.englishwords.screens.settingsScreen.notifications.NotificationViewModel
-import com.example.englishwords.viewModels.GlobalSettingsViewModel
 import com.example.englishwords.viewModels.MainViewModel
 import com.example.englishwords.viewModels.MessageViewModel
 import kotlinx.coroutines.CoroutineScope
@@ -24,11 +22,10 @@ import kotlin.random.Random
 
 class RememberWordNotificationReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context?, intent: Intent?) {
-        Log.e("Log","work")
         val notificationViewModel by inject<NotificationViewModel>(
             NotificationViewModel::class.java
         )
-        if (!notificationViewModel.isNotifications.value) return
+        if (!notificationViewModel.isWordNotifications.value) return
         val messageViewModel by inject<MessageViewModel>(MessageViewModel::class.java)
         if (messageViewModel.isAppOn.value) return
         val mainViewModel by inject<MainViewModel>(MainViewModel::class.java)

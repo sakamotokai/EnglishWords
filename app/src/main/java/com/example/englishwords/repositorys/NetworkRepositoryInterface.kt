@@ -4,5 +4,5 @@ import com.example.englishwords.models.retrofitModels.englishWordsModel.MainEngl
 import retrofit2.Response
 
 interface NetworkRepositoryInterface {
-    suspend fun getWordDefinition(endPoint:String):Response<MainEnglishModel>
+    suspend fun getWordDefinition(endPoint:String):Response<MainEnglishModel>?
 }

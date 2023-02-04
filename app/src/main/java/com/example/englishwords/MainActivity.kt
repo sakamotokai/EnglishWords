@@ -8,15 +8,11 @@ import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.navigation.compose.rememberNavController
 import com.example.englishwords.navigation.Navigation
-import com.example.englishwords.notifications.SendNotificationReceiverImpl
-import com.example.englishwords.notifications.rememberWordNotification.RememberWordNotificationReceiver
-import com.example.englishwords.notifications.reminderNotification.ReminderNotificationReceiver
 import com.example.englishwords.screens.ourUiElements.MainDrawerMenu
 import com.example.englishwords.ui.theme.ownTheme.OwnTheme
 import com.example.englishwords.viewModels.GlobalSettingsViewModel
 import com.example.englishwords.viewModels.MessageViewModel
 import org.koin.android.ext.android.get
-import org.koin.android.ext.android.inject
 import org.koin.java.KoinJavaComponent
 import java.time.LocalTime
 

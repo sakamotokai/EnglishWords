@@ -56,12 +56,13 @@ fun MainScreen() {
     var isDarkmode: MutableState<Boolean> =
         mutableStateOf(sharedPreferences.getBoolean("isDarkmode", false))
     var buttonWasClicked by remember { mutableStateOf(false) }
+    val mainScreenViewModel: MainScreenViewModel = koinViewModel()
     val mediaPlayer = MediaPlayer()
     var clickOnButtonBoolean: Boolean by remember { mutableStateOf(false) }
     var animatedErrorButton: Boolean by remember { mutableStateOf(false) }
-    var moveButton: Boolean by remember { mutableStateOf(false) }
+    var moveButton: Boolean by remember { mainScreenViewModel.moveButton }
     val viewModel = getViewModel<MainViewModel>()
-    var endPoint by remember { mutableStateOf("") }
+    var endPoint by remember{mainScreenViewModel.searchedWord}
     val scope = rememberCoroutineScope()
     val completedResult = viewModel.completedResult.collectAsState()
     var urlToListening: String? by remember { mutableStateOf("") }
@@ -87,10 +88,6 @@ fun MainScreen() {
     val animatedFloat by animateFloatAsState(
         targetValue = if (urlToListening == null) 3f else 0f
     )
-    val sdf = SimpleDateFormat("dd/MM/yy hh:mm:ss")
-    val currentData = sdf.format(Date())
-    //TODO("Keep data of added and remove word after 7 day or other(do can set up it)")
-    //keep "for time" in sharedPref
     AnimatedContent(
         targetState = isDarkmode.value,
         transitionSpec = { fadeIn() with fadeOut() }
@@ -195,6 +192,12 @@ fun MainScreen() {
             )
         }
     }
+    DisposableEffect(key1 = scope){
+        return@DisposableEffect onDispose {
+            mainScreenViewModel.setSearchedWord(endPoint)
+            mainScreenViewModel.setMoveButton(moveButton)
+        }
+    }
 }
 
 @SuppressLint("CoroutineCreationDuringComposition")
@@ -223,7 +226,7 @@ fun ColumnOfContentSurface(
             }
         } else if (buttonWasClicked) {
             Text(
-                text = "Entered the wrong word",
+                text = "Error of server side. Please try later",/*Entered the wrong word*/
                 color = OwnTheme.colors.primaryText,
                 modifier = Modifier
                     .fillMaxWidth(),
@@ -383,6 +386,9 @@ fun MainCard(
                                 if (completedResult.word.isNotEmpty()) {
                                     scope.launch {
                                         val localDate = LocalDate.now()
+                                        Log.e("Log",localDate.dayOfMonth.toString())
+                                        Log.e("Log",localDate.month.value.toString())
+                                        Log.e("Log",localDate.year.toString())
                                         val localModeldb: Modeldb = Modeldb()
                                         localModeldb.definitions =
                                             completedResult.definition ?: listOf("No Data")
@@ -393,7 +399,7 @@ fun MainCard(
                                         localModeldb.word = completedResult.word
                                         localModeldb.data = listOf(
                                             localDate.dayOfMonth.toString(),
-                                            localDate.month.toString(),
+                                            localDate.month.value.toString(),
                                             localDate.year.toString()
                                         )
                                         mainViewModel.insert(localModeldb)
