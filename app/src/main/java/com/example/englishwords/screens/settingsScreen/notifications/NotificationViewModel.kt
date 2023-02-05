@@ -1,5 +1,6 @@
 package com.example.englishwords.screens.settingsScreen.notifications
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import com.example.englishwords.models.preferencesModels.MessageSharedPreferences
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -23,6 +24,23 @@ class NotificationViewModel(settingsSharedPreferences: MessageSharedPreferences)
         )
     )
     var isWordNotifications: StateFlow<Boolean> = _isWordNotifications
+
+    private var _notificationTimeOut: MutableStateFlow<Long> = MutableStateFlow(
+        messageSharedPreference.getLong(
+            SharedPreferencesNotifications.WordNotificationsTimeOut.name,
+            10800000
+        )
+    )
+    var notificationTimeOut: StateFlow<Long> = _notificationTimeOut
+
+    fun setNotificationTimeOut(time:Long) {
+        Log.e("Log","second")
+        Log.e("Log",time.toString())
+        _notificationTimeOut.value = time
+        messageSharedPreference.edit()
+            .putLong(SharedPreferencesNotifications.WordNotificationsTimeOut.name, time)
+            .apply()
+    }
 
     fun changeWordNotificationsState() {
         _isWordNotifications.value = !_isWordNotifications.value

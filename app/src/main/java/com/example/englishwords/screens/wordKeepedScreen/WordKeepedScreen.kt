@@ -2,23 +2,27 @@ package com.example.englishwords.screens.wordKeepedScreen
 
 import android.annotation.SuppressLint
 import android.media.MediaPlayer
-import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Call
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.englishwords.db.room.Modeldb
+import com.example.englishwords.screens.ourUiElements.CustomOutlinedTextField
 import com.example.englishwords.ui.theme.ownTheme.OwnTheme
 import com.example.englishwords.viewModels.MainViewModel
 import kotlinx.coroutines.*
@@ -32,14 +36,17 @@ fun WordKeepedScreen() {
     mainViewModel.deleteEmptyWordFromRoom()
     mainViewModel.getAllFromRoom()
     val allRoomWordsCollection = mainViewModel.getAllRoomData.collectAsState()
+    var searchedWord by remember { mutableStateOf("") }
     LazyColumn(Modifier.fillMaxSize()) {
         item {
-            Spacer(modifier = Modifier.height(20.dp))
+            Spacer(modifier = Modifier.height(OwnTheme.dp.bigDp))
+            WordKeepedSearchBar { searchedWord = it }
+            Spacer(modifier = Modifier.height(OwnTheme.dp.mediumDp))
         }
         val allRoomWordsReverb = allRoomWordsCollection.value?.reversed()
-        if (allRoomWordsReverb != null) {
-            for(i in allRoomWordsReverb.indices){
-                item{
+        if (allRoomWordsReverb != null && searchedWord == "") {
+            for (i in allRoomWordsReverb.indices) {
+                item {
                     val item = allRoomWordsReverb[i]
                     WordKeepedCard(
                         item = item.word,
@@ -48,8 +55,63 @@ fun WordKeepedScreen() {
                     )
                 }
             }
+        } else {
+            allRoomWordsReverb ?: return@LazyColumn
+            for (modeldb in allRoomWordsReverb) {
+                try {//I'm really apologize for this use try catch
+                    if (modeldb.word.substring(searchedWord.indices) == searchedWord) {
+                        item {
+                            WordKeepedCard(
+                                item = modeldb.word,
+                                color = OwnTheme.colors.savedCard,
+                                roomData = modeldb
+                            )
+                        }
+                    }
+                } catch (e: java.lang.Exception) {
+                    e.printStackTrace()
+                }
+            }
         }
     }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun WordKeepedSearchBar(returnWord: (String) -> Unit) {
+    var searchedWord by remember { mutableStateOf("") }
+    CustomOutlinedTextField(
+        value = searchedWord,
+        onValueChange = {
+            searchedWord = it
+            returnWord(it)
+        },
+        placeholder = {
+            Text(
+                text = "Search",
+                fontSize = OwnTheme.typography.general.fontSize,
+                color = OwnTheme.colors.secondaryText
+            )
+        },
+        shape = CircleShape,
+        colors = TextFieldDefaults.outlinedTextFieldColors(unfocusedBorderColor = OwnTheme.colors.secondaryBackground),
+        modifier = Modifier
+            .height(OwnTheme.dp.bigDp)
+            .fillMaxWidth()
+            .padding(start = OwnTheme.dp.mediumDp, end = OwnTheme.dp.mediumDp),
+        leadingIcon = {
+            Icon(
+                imageVector = Icons.Filled.Search,
+                contentDescription = null,
+                tint = OwnTheme.colors.secondaryText
+            )
+        },
+        contentPaddingValues = PaddingValues(top = OwnTheme.dp.bigDp / 5),
+        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+        keyboardActions = KeyboardActions(onSearch = {
+
+        })
+    )
 }
 
 @SuppressLint(
@@ -62,7 +124,6 @@ fun WordKeepedCard(
     color: Color,
     roomData: Modeldb
 ) {
-    val scope = CoroutineScope(SupervisorJob())
     val mainViewModel: MainViewModel = getViewModel()
     var animationValue by remember { mutableStateOf(false) }
     Column(

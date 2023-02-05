@@ -2,12 +2,19 @@ package com.example.englishwords
 
 import android.app.*
 import android.content.Context
+import android.util.Log
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
 import com.example.englishwords.backgroundWork.deleteOldWord.DeleteOldWordReceiver
 import com.example.englishwords.backgroundWork.DoReceiverImpl
 import com.example.englishwords.di.*
 import com.example.englishwords.backgroundWork.notifications.SendNotificationReceiverImpl
 import com.example.englishwords.backgroundWork.notifications.rememberWordNotification.RememberWordNotificationReceiver
 import com.example.englishwords.backgroundWork.notifications.reminderNotification.ReminderNotificationReceiver
+import com.example.englishwords.screens.settingsScreen.notifications.NotificationViewModel
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
 import org.koin.android.ext.koin.androidContext
 import org.koin.android.ext.koin.androidLogger
 import org.koin.core.context.startKoin
@@ -29,7 +36,8 @@ class App : Application() {
             SendNotificationReceiverImpl::class.java
         )
         val doReceiver by inject<DoReceiverImpl>(DoReceiverImpl::class.java)
-        sendMessages(sendReceiver)
+        val scope = CoroutineScope(SupervisorJob())
+        sendMessages(sendReceiver,scope)
         doReceiver(doReceiver)
     }
 
@@ -37,10 +45,18 @@ class App : Application() {
         doReceiverImpl.send(86400000, 86400000,DeleteOldWordReceiver())
     }
 
-    private fun sendMessages(sendReceiver: SendNotificationReceiverImpl){
+    private fun sendMessages(sendReceiver: SendNotificationReceiverImpl,scope:CoroutineScope){
+        val notificationViewModel by inject<NotificationViewModel>(NotificationViewModel::class.java)
         val calendar = Calendar.getInstance()
-        sendReceiver.send(86400000, calendar.timeInMillis+86400000, ReminderNotificationReceiver())
-        sendReceiver.send(10800000, calendar.timeInMillis+10800000, RememberWordNotificationReceiver())
+        scope.launch {
+            notificationViewModel.notificationTimeOut.collect{
+                Log.e("Log",it.toString())
+                sendReceiver.send(10800000, calendar.timeInMillis+10800000, ReminderNotificationReceiver())
+                sendReceiver.send(it, calendar.timeInMillis+it, RememberWordNotificationReceiver())
+            }
+        }
+        //sendReceiver.send(10800000, calendar.timeInMillis+10800000, ReminderNotificationReceiver())
+        //sendReceiver.send(notificationTimeOut.value, calendar.timeInMillis+notificationTimeOut.value, RememberWordNotificationReceiver())
     }
 
     private fun createNotificationChannel(

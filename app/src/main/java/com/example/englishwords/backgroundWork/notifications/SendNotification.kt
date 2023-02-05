@@ -16,15 +16,12 @@ class SendNotificationReceiverImpl(override val context: Context):
 
     fun send(intervalAtMillis: Long,triggerAtMillis: Long,receiver: BroadcastReceiver){
         val intent = Intent(context, receiver::class.java)
-        val pendingIntent = PendingIntent.getBroadcast(//TODO("Come back if it don't work")
+        val pendingIntent = PendingIntent.getBroadcast(
             context, alarmManager.hashCode(), intent,
-            0//PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            0
         )
         alarmManager.setInexactRepeating(
-            AlarmManager.RTC_WAKEUP,triggerAtMillis, intervalAtMillis, pendingIntent/*PendingIntent.getBroadcast(
-                context, alarmManager.hashCode(), intent,
-                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-            )*/)
+            AlarmManager.RTC_WAKEUP,triggerAtMillis, intervalAtMillis, pendingIntent)
     }
 
 }

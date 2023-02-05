@@ -126,7 +126,7 @@ class MainViewModel(
     }
 
     fun getRoomDataByWord(word:String){
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.Default) {
             _getSingleRoomData.value = repository.getDataByWord(word)
         }
     }

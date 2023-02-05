@@ -131,6 +131,20 @@ class SettingsViewModel(settingsSharedPreferences: SettingsSharedPreferences) : 
     )
     var savedCardDark: StateFlow<Long> = _savedCardDark
 
+    private var _buttonDark: MutableStateFlow<Long> = MutableStateFlow(
+        settingsSharedPreference.getLong(
+            CustomColorName.CustomThemeButton.name,
+            -49090505530671104
+        )
+    )
+    var buttonDark: StateFlow<Long> = _buttonDark
+
+    fun setButtonDark(color: Long) {
+        _buttonDark.value = color
+        settingsSharedPreference.edit().putLong(CustomColorName.CustomThemeButton.name, color)
+            .apply()
+    }
+
     fun setSavedDark(color: Long) {
         _savedCardDark.value = color
         settingsSharedPreference.edit().putLong(CustomColorName.CustomThemeSavedCard.name, color)
@@ -329,6 +343,20 @@ class SettingsViewModel(settingsSharedPreferences: SettingsSharedPreferences) : 
         )
     )
     var savedCard: StateFlow<Long> = _savedCard
+
+    private var _button: MutableStateFlow<Long> = MutableStateFlow(
+        settingsSharedPreference.getLong(
+            CustomColorName.CustomThemeButton.name,
+            -19842955065950208
+        )
+    )
+    var button: StateFlow<Long> = _button
+
+    fun setButton(color: Long) {
+        _button.value = color
+        settingsSharedPreference.edit().putLong(CustomColorName.CustomThemeButton.name, color)
+            .apply()
+    }
 
     fun setSavedCard(color: Long) {
         _savedCard.value = color

@@ -55,7 +55,8 @@ fun OwnTheme(
                 secondaryText = Color(settingsViewModel.secondaryTextDark.collectAsState().value),
                 exampleCard = Color(settingsViewModel.exampleCardDark.collectAsState().value.toULong()),
                 definitionCard = Color(settingsViewModel.definitionCardDark.collectAsState().value.toULong()),
-                savedCard = Color(settingsViewModel.savedCardDark.collectAsState().value.toULong())
+                savedCard = Color(settingsViewModel.savedCardDark.collectAsState().value.toULong()),
+                button = Color(settingsViewModel.buttonDark.collectAsState().value.toULong())
             )
         } else {
             baseLightPalette.copy(
@@ -73,7 +74,8 @@ fun OwnTheme(
                 secondaryText = Color(settingsViewModel.secondaryText.collectAsState().value),
                 exampleCard = Color(settingsViewModel.exampleCard.collectAsState().value.toULong()),
                 definitionCard = Color(settingsViewModel.definitionCard.collectAsState().value.toULong()),
-                savedCard = Color(settingsViewModel.savedCard.collectAsState().value.toULong())
+                savedCard = Color(settingsViewModel.savedCard.collectAsState().value.toULong()),
+                button = Color(settingsViewModel.button.collectAsState().value.toULong())
             )
         }
 

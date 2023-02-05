@@ -1,9 +1,8 @@
-package com.example.englishwords.screens
+package com.example.englishwords.screens.mainScreen
 
 import android.annotation.SuppressLint
 import android.content.SharedPreferences
 import android.media.MediaPlayer
-import android.util.Log
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
@@ -32,7 +31,6 @@ import androidx.compose.ui.unit.sp
 import com.example.englishwords.SharedPreferencesEnum
 import com.example.englishwords.db.room.Modeldb
 import com.example.englishwords.models.retrofitModels.CompletedResult
-import com.example.englishwords.screens.mainScreen.MainScreenViewModel
 import com.example.englishwords.ui.theme.ownTheme.OwnTheme
 import com.example.englishwords.viewModels.MainViewModel
 import kotlinx.coroutines.*
@@ -40,7 +38,6 @@ import org.koin.androidx.compose.get
 import org.koin.androidx.compose.getViewModel
 import org.koin.androidx.compose.koinViewModel
 import org.koin.core.parameter.parametersOf
-import java.text.SimpleDateFormat
 import java.time.LocalDate
 import java.util.*
 
@@ -57,15 +54,71 @@ fun MainScreen() {
         mutableStateOf(sharedPreferences.getBoolean("isDarkmode", false))
     var buttonWasClicked by remember { mutableStateOf(false) }
     val mainScreenViewModel: MainScreenViewModel = koinViewModel()
-    val mediaPlayer = MediaPlayer()
     var clickOnButtonBoolean: Boolean by remember { mutableStateOf(false) }
-    var animatedErrorButton: Boolean by remember { mutableStateOf(false) }
     var moveButton: Boolean by remember { mainScreenViewModel.moveButton }
     val viewModel = getViewModel<MainViewModel>()
-    var endPoint by remember{mainScreenViewModel.searchedWord}
+    var endPoint by remember { mainScreenViewModel.searchedWord }
     val scope = rememberCoroutineScope()
     val completedResult = viewModel.completedResult.collectAsState()
     var urlToListening: String? by remember { mutableStateOf("") }
+    var errorClickOnButton by remember { mutableStateOf(false) }
+    AnimatedContent(
+        targetState = isDarkmode.value,
+        transitionSpec = { fadeIn() with fadeOut() }
+    ) {
+        Column(modifier = Modifier.background(color = OwnTheme.colors.primaryBackground)) {
+            Spacer(modifier = Modifier.height(OwnTheme.dp.bigDp))
+            SearchBar(
+                endPoint = endPoint,
+                returnEndPoint = { endPoint = it },
+                moveButton = { moveButton = it })
+            Spacer(Modifier.height(OwnTheme.dp.normalDp))
+            AnimatedContent(targetState = true) {
+                MainScreenSearchButtonRow(
+                    endPoint = endPoint,
+                    returnMoveButton = { moveButton = it },
+                    mainViewModel = viewModel,
+                    buttonWasClicked = { buttonWasClicked = it },
+                    returnUrlToListening = { urlToListening = it },
+                    returnClickOnButtonBoolean = { clickOnButtonBoolean = it },
+                    clickOnButtonBoolean = clickOnButtonBoolean,
+                    moveButton = moveButton,
+                    urlToListening = urlToListening,
+                    returnErrorClickOnButton = { errorClickOnButton = it }
+                )
+            }
+            ColumnOfContentSurface(
+                viewModel = viewModel,
+                completedResult = completedResult.value,
+                buttonWasClicked = buttonWasClicked,
+                returnUrl = { urlToListening = it },
+                errorClickOnButton = errorClickOnButton
+            )
+        }
+    }
+    DisposableEffect(key1 = scope) {
+        return@DisposableEffect onDispose {
+            mainScreenViewModel.setSearchedWord(endPoint)
+            mainScreenViewModel.setMoveButton(moveButton)
+        }
+    }
+}
+
+@OptIn(ExperimentalAnimationApi::class)
+@Composable
+fun MainScreenSearchButtonRow(
+    endPoint: String,
+    returnMoveButton: (Boolean) -> Unit,
+    mainViewModel: MainViewModel,
+    buttonWasClicked: (Boolean) -> Unit,
+    returnUrlToListening: (String?) -> Unit,
+    returnClickOnButtonBoolean: (Boolean) -> Unit,
+    clickOnButtonBoolean: Boolean,
+    moveButton: Boolean,
+    urlToListening: String?,
+    returnErrorClickOnButton: (Boolean) -> Unit
+) {
+    var animatedErrorButton: Boolean by remember { mutableStateOf(false) }
     val scale by animateFloatAsState(
         targetValue = if (animatedErrorButton) 1.1f else 1f,
         animationSpec = repeatable(
@@ -89,113 +142,99 @@ fun MainScreen() {
         targetValue = if (urlToListening == null) 3f else 0f
     )
     AnimatedContent(
-        targetState = isDarkmode.value,
-        transitionSpec = { fadeIn() with fadeOut() }
+        targetState = moveButton,
+        transitionSpec = {
+            if (moveButton) {
+                slideInHorizontally(animationSpec = spring(2f)) with slideOutHorizontally()
+            } else {
+                slideInHorizontally(animationSpec = spring(2f)) with slideOutHorizontally()
+            }
+        }
+
     ) {
-        Column(modifier = Modifier.background(color = OwnTheme.colors.primaryBackground)) {
-            Spacer(modifier = Modifier.height(OwnTheme.dp.bigDp))
-            SearchBar(
-                endPoint = endPoint,
-                returnEndPoint = { endPoint = it },
-                moveButton = { moveButton = it })
-            Spacer(Modifier.height(OwnTheme.dp.normalDp))
-            AnimatedContent(
-                targetState = moveButton,
-                transitionSpec = {
-                    if (moveButton) {
-                        slideInHorizontally(animationSpec = spring(2f)) with slideOutHorizontally()
-                    } else {
-                        slideInHorizontally(animationSpec = spring(2f)) with slideOutHorizontally()
-                    }
-                }
-            ) {
-                Row(
-                    horizontalArrangement = if (it) Arrangement.Start else Arrangement.Center,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                ) {
-                    Button(
-                        onClick = {
-                            viewModel.getCompletedResult(endPoint)
-                            buttonWasClicked = true
-                            urlToListening = null
-                            scope.launch {
-                                clickOnButtonBoolean = !clickOnButtonBoolean
-                                if (endPoint.isEmpty() && !moveButton) {
-                                    animatedErrorButton = true
-                                }
-                                if (!endPoint.isEmpty()) {
-                                    moveButton = true
-                                }
-                            }
-                        },
-                        modifier = Modifier
-                            .graphicsLayer {
-                                scaleX = if (animatedErrorButton) scale else 1f
-                                scaleY = if (animatedErrorButton) scale else 1f
-                            }
-                            .border(
-                                width = 4.dp,
-                                color = errorColor,
-                                shape = RoundedCornerShape(100)
-                            )
-                            .shadow(5.dp, RoundedCornerShape(40)),
-                        colors = ButtonDefaults.buttonColors(containerColor = OwnTheme.colors.purple)
-                    ) {
-                        Text(
-                            text = "Search",
-                            color = OwnTheme.colors.primaryText,
-                            fontSize = OwnTheme.typography.general.fontSize.value.sp
-                        )
-                    }
-                }
-                AnimatedVisibility(
-                    visible = moveButton
-                ) {
-                    Row(
-                        horizontalArrangement = Arrangement.End,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                    ) {
-                        FloatingActionButton(
-                            onClick = {
-                                try {
-                                    mediaPlayer.setDataSource(urlToListening)
-                                    mediaPlayer.prepare()
-                                    mediaPlayer.start()
-                                } catch (e: java.lang.Exception) {
-                                    mediaPlayer.start()
-                                }
-                            },
-                            shape = CircleShape,
-                            containerColor = OwnTheme.colors.purple,
-                            modifier = if (animatedFloat != 0f) {
-                                Modifier
-                                    .border(animatedFloat.dp, Color.Red, shape = CircleShape)
-                                    .clickable(enabled = false) {}
-                            } else Modifier
-                        ) {
-                            Icon(
-                                Icons.Filled.PlayArrow,
-                                contentDescription = null,
-                                tint = OwnTheme.colors.primaryText
-                            )
+        Row(
+            horizontalArrangement = if (it) Arrangement.Start else Arrangement.Center,
+            modifier = Modifier
+                .fillMaxWidth()
+        ) {
+            val scope = rememberCoroutineScope()
+            Button(
+                onClick = {
+                    mainViewModel.getCompletedResult(endPoint)
+                    buttonWasClicked(true)
+                    returnUrlToListening(null)
+                    scope.launch {
+                        returnClickOnButtonBoolean(!clickOnButtonBoolean)
+                        if (endPoint.isEmpty() && !moveButton) {
+                            animatedErrorButton = true
+                            returnErrorClickOnButton(true)
+                        } else returnErrorClickOnButton(false)
+                        if (!endPoint.isEmpty()) {
+                            returnMoveButton(true)
                         }
                     }
-                }
+                },
+                modifier = Modifier
+                    .graphicsLayer {
+                        scaleX = if (animatedErrorButton) scale else 1f
+                        scaleY = if (animatedErrorButton) scale else 1f
+                    }
+                    .border(
+                        width = 4.dp,
+                        color = errorColor,
+                        shape = RoundedCornerShape(100)
+                    )
+                    .shadow(5.dp, RoundedCornerShape(40)),
+                colors = ButtonDefaults.buttonColors(containerColor = OwnTheme.colors.button)
+            ) {
+                Text(
+                    text = "Search",
+                    color = OwnTheme.colors.primaryText,
+                    fontSize = OwnTheme.typography.general.fontSize.value.sp
+                )
             }
-            ColumnOfContentSurface(
-                viewModel = viewModel,
-                completedResult = completedResult.value,
-                buttonWasClicked = buttonWasClicked,
-                returnUrl = { urlToListening = it }
-            )
         }
     }
-    DisposableEffect(key1 = scope){
-        return@DisposableEffect onDispose {
-            mainScreenViewModel.setSearchedWord(endPoint)
-            mainScreenViewModel.setMoveButton(moveButton)
+
+    AnimatedVisibility(
+        visible = moveButton,
+        enter = fadeIn() + slideInHorizontally(),
+        exit = fadeOut() + slideOutHorizontally()
+    ) {
+        Row(
+            horizontalArrangement = Arrangement.End,
+            modifier = Modifier
+                .fillMaxWidth()
+        ) {
+            FloatingActionButton(
+                onClick = {
+                    val mediaPlayer = MediaPlayer()
+                    try {
+                        mediaPlayer.setDataSource(urlToListening)
+                        mediaPlayer.prepare()
+                        mediaPlayer.start()
+                    } catch (e: java.lang.Exception) {
+                        mediaPlayer.start()
+                    }
+                },
+                shape = CircleShape,
+                containerColor = OwnTheme.colors.purple,
+                modifier = if (animatedFloat != 0f) {
+                    Modifier
+                        .border(
+                            animatedFloat.dp,
+                            Color.Red,
+                            shape = CircleShape
+                        )
+                        .clickable(enabled = false) {}
+                } else Modifier
+            ) {
+                Icon(
+                    Icons.Filled.PlayArrow,
+                    contentDescription = null,
+                    tint = OwnTheme.colors.primaryText
+                )
+            }
         }
     }
 }
@@ -206,8 +245,10 @@ fun ColumnOfContentSurface(
     viewModel: MainViewModel,
     completedResult: CompletedResult?,
     buttonWasClicked: Boolean,
-    returnUrl: (result: String?) -> Unit
+    returnUrl: (result: String?) -> Unit,
+    errorClickOnButton: Boolean
 ) {
+    if (errorClickOnButton) return
     if (viewModel.loading.value) CircularProgressIndicator(Modifier.fillMaxSize()) else {
         if (completedResult != null) {
             if (completedResult.isSuccess) {
@@ -226,7 +267,7 @@ fun ColumnOfContentSurface(
             }
         } else if (buttonWasClicked) {
             Text(
-                text = "Error of server side. Please try later",/*Entered the wrong word*/
+                text = "Error of server side. Please try later",
                 color = OwnTheme.colors.primaryText,
                 modifier = Modifier
                     .fillMaxWidth(),
@@ -283,7 +324,6 @@ fun SearchBar(
 fun ShowCard(
     completedResult: CompletedResult?
 ) {
-    val mainViewModel: MainViewModel = get()
     LazyColumn(
         modifier = Modifier
             .background(
@@ -348,7 +388,12 @@ fun MainCard(
         })
     }
     var sentence: String? by remember { mutableStateOf(null) }
-    if (sentence != null)
+    var showWindowAbove by remember { mutableStateOf(false) }
+    AnimatedVisibility(
+        visible = showWindowAbove,
+        enter = slideInVertically(),
+        exit = slideOutVertically()
+    ) {
         WindowAboveCard(
             word = sentence!!
                 .replace(",", "")
@@ -356,8 +401,10 @@ fun MainCard(
                 .replace("!", "")
                 .replace(":", "")
                 .replace(")", "")
-                .replace(";", "")
+                .replace(";", ""),
+            closeThisWindow = { showWindowAbove = it }
         )
+    }
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -378,7 +425,8 @@ fun MainCard(
             val text = AnnotatedString(item)
             Row(Modifier.fillMaxWidth()) {
                 if (completedResult?.word != null)
-                    if (savable && goalWord == "") Text(text = localText,
+                    if (savable && goalWord == "") Text(
+                        text = localText,
                         color = OwnTheme.colors.primaryText,
                         modifier = Modifier
                             .clickable {
@@ -386,10 +434,7 @@ fun MainCard(
                                 if (completedResult.word.isNotEmpty()) {
                                     scope.launch {
                                         val localDate = LocalDate.now()
-                                        Log.e("Log",localDate.dayOfMonth.toString())
-                                        Log.e("Log",localDate.month.value.toString())
-                                        Log.e("Log",localDate.year.toString())
-                                        val localModeldb: Modeldb = Modeldb()
+                                        val localModeldb = Modeldb()
                                         localModeldb.definitions =
                                             completedResult.definition ?: listOf("No Data")
                                         localModeldb.examples =
@@ -412,10 +457,11 @@ fun MainCard(
                     onClick = { offset ->
                         val words = text.split(" ")
                         var cursor = 0
-                        for (word in words) {
-                            cursor += word.length
+                        for (i in words) {
+                            cursor += i.length
                             if (offset <= cursor) {
-                                sentence = word
+                                sentence = i
+                                showWindowAbove = true
                                 break
                             }
                             cursor++
@@ -444,84 +490,86 @@ fun MainCard(
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun WindowAboveCard(word: String?, mainScreenViewModel: MainScreenViewModel = koinViewModel()) {
-    var wordInstance: String? by remember { mutableStateOf(word) }
-    var visible by remember { mutableStateOf(true) }
+fun WindowAboveCard(
+    word: String,
+    mainScreenViewModel: MainScreenViewModel = koinViewModel(),
+    closeThisWindow: (Boolean) -> Unit
+) {
+    var visible by remember { mutableStateOf(false) }
     val viewModel = get<MainViewModel>()
-    if (word != wordInstance) {
+    viewModel.getCompletedResult(word)
+    val completedResult = viewModel.completedResult.collectAsState()
+    val scope = rememberCoroutineScope()
+    LaunchedEffect(key1 = scope) {
         visible = true
-        wordInstance = word
     }
-    if (word != null) {
-        viewModel.getCompletedResult(word)
-        val completedResult = viewModel.completedResult.collectAsState()
-        AnimatedVisibility(visible = visible) {//TODO("to do animation in other coroutine like i do in keepedscreen")
-            Column(
+    AnimatedVisibility(visible = visible) {
+        Column(
+            modifier = Modifier
+                .fillMaxHeight()
+                .background(
+                    OwnTheme.colors.backgroundInBackground,
+                    shape = OwnTheme.sizesShapes.smallShape
+                )
+        ) {
+            Row(
                 modifier = Modifier
-                    .fillMaxHeight()
-                    .background(
-                        OwnTheme.colors.backgroundInBackground,
-                        shape = OwnTheme.sizesShapes.smallShape
-                    )
+                    .fillMaxWidth(),
+                horizontalArrangement = Arrangement.End
             ) {
-                Row(
+                Icon(
+                    imageVector = Icons.Filled.Close,
+                    contentDescription = null,
                     modifier = Modifier
-                        .fillMaxWidth(),
-                    horizontalArrangement = Arrangement.End
+                        .clickable {
+                            closeThisWindow(false)
+                            visible = false
+                            mainScreenViewModel.aboveCardState.value = null
+                        },
+                    tint = OwnTheme.colors.tintColor
+                )
+            }
+            if (viewModel.loading.value) {
+                Row(
+                    Modifier.fillMaxSize(),
+                    horizontalArrangement = Arrangement.Center
                 ) {
-                    Icon(
-                        imageVector = Icons.Filled.Close,
-                        contentDescription = null,
-                        modifier = Modifier
-                            .clickable {
-                                visible = false
-                                mainScreenViewModel.aboveCardState.value = null
-                            },
-                        tint = OwnTheme.colors.tintColor
-                    )
+                    CircularProgressIndicator(modifier = Modifier)
                 }
-                if (viewModel.loading.value) {
-                    Row(
-                        Modifier.fillMaxSize(),
-                        horizontalArrangement = Arrangement.Center
-                    ) {
-                        CircularProgressIndicator(modifier = Modifier)
-                    }
-                } else {
-                    if (completedResult.value != null) {
-                        if (completedResult.value!!.isSuccess) {
-                            if (completedResult.value!!.word != null) {
+            } else {
+                if (completedResult.value != null) {
+                    if (completedResult.value!!.isSuccess) {
+                        if (completedResult.value!!.word != null) {
+                            MainCard(
+                                item = "Word is ${completedResult.value!!.word}",
+                                color = OwnTheme.colors.green,
+                                centerText = true,
+                                wordCard = true,
+                                savable = true,
+                                completedResult = completedResult.value
+                            )
+                        }
+                        if (completedResult.value!!.definition != null)
+                            completedResult.value!!.definition!!.forEach { item ->
                                 MainCard(
-                                    item = "Word is ${completedResult.value!!.word}",
-                                    color = OwnTheme.colors.green,
-                                    centerText = true,
-                                    wordCard = true,
-                                    savable = true,
-                                    completedResult = completedResult.value
+                                    item = item,
+                                    color = OwnTheme.colors.definitionCard,
+                                    cardType = "Definition:"
                                 )
                             }
-                            if (completedResult.value!!.definition != null)
-                                completedResult.value!!.definition!!.forEach { item ->
-                                    MainCard(
-                                        item = item,
-                                        color = OwnTheme.colors.definitionCard,
-                                        cardType = "Definition:"
-                                    )
-                                }
-                            if (completedResult.value!!.instance != null)
-                                completedResult.value!!.instance!!.forEach { item ->
-                                    MainCard(
-                                        item = item,
-                                        color = OwnTheme.colors.exampleCard,
-                                        cardType = "Instance:"
-                                    )
-                                }
-                        } else {
-                            MainCard(item = "Error try later", color = OwnTheme.colors.error)
-                        }
+                        if (completedResult.value!!.instance != null)
+                            completedResult.value!!.instance!!.forEach { item ->
+                                MainCard(
+                                    item = item,
+                                    color = OwnTheme.colors.exampleCard,
+                                    cardType = "Instance:"
+                                )
+                            }
                     } else {
                         MainCard(item = "Error try later", color = OwnTheme.colors.error)
                     }
+                } else {
+                    MainCard(item = "Error try later", color = OwnTheme.colors.error)
                 }
             }
         }

@@ -17,7 +17,7 @@ class DoReceiverImpl(override val context: Context):
     private val calendar = Calendar.getInstance()
     fun send(intervalAtMillis: Long,triggerAtMillis: Long,receiver: BroadcastReceiver){
         val intent = Intent(context, receiver::class.java)
-        val pendingIntent = PendingIntent.getBroadcast(//TODO("Came back if it don't work")
+        val pendingIntent = PendingIntent.getBroadcast(
             context, alarmManager.hashCode(), intent,
             0
         )

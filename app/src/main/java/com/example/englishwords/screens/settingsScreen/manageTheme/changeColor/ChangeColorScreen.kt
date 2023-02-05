@@ -1,18 +1,14 @@
 package com.example.englishwords.screens.settingsScreen.manageTheme.changeColor
 
 import android.annotation.SuppressLint
-import android.util.Log
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowDown
@@ -23,25 +19,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
-import com.example.englishwords.db.room.Modeldb
-import com.example.englishwords.models.retrofitModels.CompletedResult
-import com.example.englishwords.screens.WindowAboveCard
-import com.example.englishwords.screens.mainScreen.MainScreenViewModel
 import com.example.englishwords.screens.settingsScreen.SettingsViewModel
-import com.example.englishwords.screens.wordKeepedScreen.WordKeepedCardContent
 import com.example.englishwords.ui.theme.ownTheme.*
 import com.example.englishwords.viewModels.GlobalSettingsViewModel
-import com.example.englishwords.viewModels.MainViewModel
 import kotlinx.coroutines.*
 import org.koin.androidx.compose.get
-import org.koin.androidx.compose.getViewModel
-import org.koin.androidx.compose.koinViewModel
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter", "UnusedMaterialScaffoldPaddingParameter")
 @Composable
@@ -230,6 +217,9 @@ fun ChangeColorSaveColorChanged(
                         itemOfList[3] -> {
                             settingsViewModel.setSavedDark(color.value.toLong())
                         }
+                        itemOfList[4]->{
+                            settingsViewModel.setButtonDark(color.value.toLong())
+                        }
                     }
                 else
                     when (itemName) {
@@ -245,6 +235,9 @@ fun ChangeColorSaveColorChanged(
                         itemOfList[3] -> {
                             settingsViewModel.setSavedCard(color.value.toLong())
                         }
+                        itemOfList[4]->{
+                            settingsViewModel.setButton(color.value.toLong())
+                        }
                     }
             })
 }
@@ -258,7 +251,7 @@ fun ChangeColorExpandedCard(
 ) {
     //if you changed localNameList you should edit ChangeColorChangeColorItem and ChangeColorSaveColorChanged
     val localNameList: List<String> =
-        listOf("Main color", "Definition color", "Example color", "Saved word color")
+        listOf("Main color", "Definition color", "Example color", "Saved word color","Button")
     var currentName by remember { mutableStateOf(localNameList[0]) }
     returnItemName(currentName)
     returnListName(localNameList)
@@ -323,7 +316,7 @@ fun ChangeColorExpandedCard(
 fun ChangeColorChangeColorItem(itemName: String, localName: List<String>, color: Color) {
     when (itemName) {
         localName[0] -> {
-            ChangeColorMainColorBox(color)
+            ChangeColorMainColorBox(color = color)
         }
         localName[1] -> {
             ChangeColorDefExamCard(color = color, cardType = "Definition:")
@@ -334,12 +327,20 @@ fun ChangeColorChangeColorItem(itemName: String, localName: List<String>, color:
         localName[3] -> {
             ColorChangeWordKeepedCard(color = color)
         }
+        localName[4]->{
+            ChangeColorButtonBox(color = color)
+        }
     }
 }
 
 @Composable
 fun ChangeColorMainColorBox(color: Color) {
-    ThemeExample(color)
+    ThemeExample(tintColor = color)
+}
+
+@Composable
+fun ChangeColorButtonBox(color: Color){
+    ThemeExample(buttonColor = color)//TODO("continue work with colors(i need change color button in color theme "see under"):)")
 }
 
 @Composable
@@ -415,7 +416,6 @@ fun ChangeColorColorThemeBox(
             LazyRow(
                 Modifier
                     .fillMaxWidth()
-                    //.horizontalScroll(rememberScrollState())
                     .background(OwnTheme.colors.primaryBackground)
                     .padding(
                         top = OwnTheme.dp.smallDp,
@@ -457,6 +457,7 @@ fun ChangeColorColorThemeLine(isDarkMode: Boolean, settingsViewModel: SettingsVi
 @Composable
 fun ThemeExample(
     tintColor: Color = OwnTheme.colors.tintColor,
+    buttonColor:Color = OwnTheme.colors.button,
     textSize: OwnTypography = OwnTheme.typography
 ) {
     var animatedErrorButton: Boolean by remember { mutableStateOf(false) }
@@ -529,7 +530,7 @@ fun ThemeExample(
                     shape = RoundedCornerShape(100)
                 )
                 .shadow(5.dp, RoundedCornerShape(40)),
-            colors = ButtonDefaults.buttonColors(containerColor = OwnTheme.colors.purple)
+            colors = ButtonDefaults.buttonColors(containerColor = buttonColor)
         ) {
             androidx.compose.material3.Text(text = "Search", color = OwnTheme.colors.primaryText)
         }
@@ -648,7 +649,7 @@ fun ThemeExampleLessSize(style: OwnColors = OwnTheme.colors, settingsViewModel: 
                         .shadow(2.dp, RoundedCornerShape(40))
                         .height(20.dp)
                         .width(32.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = OwnTheme.colors.purple),
+                    colors = ButtonDefaults.buttonColors(containerColor = style.button),
                 ) {}
             }
             Spacer(modifier = Modifier.height(2.dp))

@@ -22,7 +22,8 @@ data class OwnColors(
     val black:Color,
     val definitionCard:Color,
     val exampleCard:Color,
-    val savedCard:Color
+    val savedCard:Color,
+    val button:Color
 )
 
 data class OwnTypography(

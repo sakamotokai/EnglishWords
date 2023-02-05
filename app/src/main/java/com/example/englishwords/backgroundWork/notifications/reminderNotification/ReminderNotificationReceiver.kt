@@ -16,7 +16,7 @@ import org.koin.java.KoinJavaComponent
 import java.time.LocalTime
 import kotlin.random.Random
 
-class ReminderNotificationReceiver() : BroadcastReceiver() {
+class ReminderNotificationReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context?, intent: Intent?) {
         val notificationViewModel by KoinJavaComponent.inject<NotificationViewModel>(
             NotificationViewModel::class.java

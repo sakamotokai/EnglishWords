@@ -8,7 +8,7 @@ import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.navigation.compose.rememberNavController
 import com.example.englishwords.navigation.Navigation
-import com.example.englishwords.screens.ourUiElements.MainDrawerMenu
+import com.example.englishwords.navigation.MainDrawerMenu
 import com.example.englishwords.ui.theme.ownTheme.OwnTheme
 import com.example.englishwords.viewModels.GlobalSettingsViewModel
 import com.example.englishwords.viewModels.MessageViewModel

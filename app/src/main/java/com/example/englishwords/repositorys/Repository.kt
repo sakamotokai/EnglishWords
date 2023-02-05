@@ -1,27 +1,19 @@
 package com.example.englishwords.repositorys
 
-import android.util.Log
 import com.example.englishwords.db.room.Daodb
 import com.example.englishwords.db.room.Modeldb
 import com.example.englishwords.models.retrofitModels.englishWordsModel.MainEnglishModel
 import com.example.englishwords.retrofit.RetrofitInstance
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.launch
-import okhttp3.ResponseBody
 import retrofit2.Response
 
-class Repository(val retrofitInstance: RetrofitInstance, val dao: Daodb) :
+class Repository(private val retrofitInstance: RetrofitInstance, private val dao: Daodb) :
     NetworkRepositoryInterface, RoomRepositoryInterface {
 
     override suspend fun getWordDefinition(endPoint: String): Response<MainEnglishModel>? {
         return try {
-            Log.e("Log","try")
             RetrofitInstance.api.getPost(endPoint)
         } catch (e:java.lang.Exception){
-            Log.e("Log","catch")
             null
         }
     }
@@ -61,12 +53,12 @@ class Repository(val retrofitInstance: RetrofitInstance, val dao: Daodb) :
         dao.deleteByName(name)
     }
 
-    val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+    /*private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
     fun insertOwn(modeldb: Modeldb) {
         scope.launch {
             dao.insert(modeldb = modeldb)
         }
-    }
+    }*/
 
 }
