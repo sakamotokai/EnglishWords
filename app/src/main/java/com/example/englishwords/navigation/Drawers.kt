@@ -14,6 +14,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import com.example.englishwords.screens.ourUiElements.customClickable
 import com.example.englishwords.ui.theme.ownTheme.OwnTheme
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -37,8 +38,13 @@ fun MainDrawerMenu(navController: NavHostController,scaffoldState: ScaffoldState
         Spacer(modifier = Modifier.height(OwnTheme.dp.mediumDp))
         DrawerItems().screensItem.forEach {
             DrawerCard(item = it, navController,scaffoldState,scope)
-            Spacer(modifier = Modifier.height(10.dp))
+            Spacer(modifier = Modifier.height(OwnTheme.dp.normalDp))
         }
+        Spacer(modifier = Modifier.height(OwnTheme.dp.normalDp))
+        Box(modifier = Modifier.background(
+            OwnTheme.colors.secondaryBackground,
+            shape = OwnTheme.sizesShapes.smallShape
+        ).fillMaxSize())
     }
 }
 
@@ -52,7 +58,7 @@ fun DrawerCard(item: Screen, navController: NavHostController,scaffoldState: Sca
                 color = OwnTheme.colors.primaryBackground,
                 shape = OwnTheme.sizesShapes.largeShape
             )
-            .clickable {
+            .customClickable {
                 navController.navigate(item.route) {
                     popUpTo(Screen.MainScreen.route) {
                         //inclusive = true
@@ -65,8 +71,12 @@ fun DrawerCard(item: Screen, navController: NavHostController,scaffoldState: Sca
             }
     ) {
         Row(
-            Modifier.fillMaxWidth()
-                .background(OwnTheme.colors.primaryBackground,shape = OwnTheme.sizesShapes.mediumShape),
+            Modifier
+                .fillMaxWidth()
+                .background(
+                    OwnTheme.colors.primaryBackground,
+                    shape = OwnTheme.sizesShapes.mediumShape
+                ),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Icon(

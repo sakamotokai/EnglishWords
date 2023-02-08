@@ -1,8 +1,8 @@
 package com.example.englishwords.screens.mainScreen
 
 import android.annotation.SuppressLint
-import android.content.SharedPreferences
 import android.media.MediaPlayer
+import android.util.Log
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
@@ -15,20 +15,27 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.ClickableText
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import com.example.englishwords.SharedPreferencesEnum
+import androidx.compose.ui.unit.*
+import androidx.compose.ui.window.Popup
+import androidx.compose.ui.window.PopupProperties
+import com.example.englishwords.R
 import com.example.englishwords.db.room.Modeldb
 import com.example.englishwords.models.retrofitModels.CompletedResult
 import com.example.englishwords.ui.theme.ownTheme.OwnTheme
@@ -37,7 +44,6 @@ import kotlinx.coroutines.*
 import org.koin.androidx.compose.get
 import org.koin.androidx.compose.getViewModel
 import org.koin.androidx.compose.koinViewModel
-import org.koin.core.parameter.parametersOf
 import java.time.LocalDate
 import java.util.*
 
@@ -48,10 +54,6 @@ import java.util.*
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun MainScreen() {
-    val sharedPreferences: SharedPreferences =
-        get(parameters = { parametersOf(SharedPreferencesEnum.settings.route) })
-    var isDarkmode: MutableState<Boolean> =
-        mutableStateOf(sharedPreferences.getBoolean("isDarkmode", false))
     var buttonWasClicked by remember { mutableStateOf(false) }
     val mainScreenViewModel: MainScreenViewModel = koinViewModel()
     var clickOnButtonBoolean: Boolean by remember { mutableStateOf(false) }
@@ -61,47 +63,223 @@ fun MainScreen() {
     val scope = rememberCoroutineScope()
     val completedResult = viewModel.completedResult.collectAsState()
     var urlToListening: String? by remember { mutableStateOf("") }
-    var errorClickOnButton by remember { mutableStateOf(false) }
-    AnimatedContent(
-        targetState = isDarkmode.value,
-        transitionSpec = { fadeIn() with fadeOut() }
-    ) {
-        Column(modifier = Modifier.background(color = OwnTheme.colors.primaryBackground)) {
-            Spacer(modifier = Modifier.height(OwnTheme.dp.bigDp))
-            SearchBar(
+    var errorClickOnButton by remember { mutableStateOf(mainScreenViewModel.errorCLickOnButton.value) }
+    var animatedErrorButton: Boolean by remember { mutableStateOf(false) }
+    //var popumSaveNoteState by remember { mutableStateOf(false) }
+    val popUpViewNoteCreate = mainScreenViewModel.viewNoteCreateState.collectAsState()
+    //val saveDataForNote = mainScreenViewModel.saveNote.collectAsState()
+    Column(modifier = Modifier.background(color = OwnTheme.colors.primaryBackground)) {
+        Spacer(modifier = Modifier.height(OwnTheme.dp.bigDp))
+        SearchBar(
+            endPoint = endPoint,
+            returnEndPoint = { endPoint = it },
+            moveButton = moveButton,
+            returnMoveButton = { moveButton = it },
+            mainViewModel = viewModel,
+            buttonWasClicked = { buttonWasClicked = it },
+            returnUrlToListening = { urlToListening = it },
+            returnClickOnButtonBoolean = { clickOnButtonBoolean = it },
+            clickOnButtonBoolean = clickOnButtonBoolean,
+            returnErrorClickOnButton = { errorClickOnButton = it },
+            animatedErrorButton = { animatedErrorButton = it },
+            scope = scope
+        )
+        Spacer(Modifier.height(OwnTheme.dp.normalDp))
+        AnimatedContent(targetState = true) {
+            MainScreenSearchButtonRow(
                 endPoint = endPoint,
-                returnEndPoint = { endPoint = it },
-                moveButton = { moveButton = it })
-            Spacer(Modifier.height(OwnTheme.dp.normalDp))
-            AnimatedContent(targetState = true) {
-                MainScreenSearchButtonRow(
-                    endPoint = endPoint,
-                    returnMoveButton = { moveButton = it },
-                    mainViewModel = viewModel,
-                    buttonWasClicked = { buttonWasClicked = it },
-                    returnUrlToListening = { urlToListening = it },
-                    returnClickOnButtonBoolean = { clickOnButtonBoolean = it },
-                    clickOnButtonBoolean = clickOnButtonBoolean,
-                    moveButton = moveButton,
-                    urlToListening = urlToListening,
-                    returnErrorClickOnButton = { errorClickOnButton = it }
-                )
-            }
-            ColumnOfContentSurface(
-                viewModel = viewModel,
-                completedResult = completedResult.value,
-                buttonWasClicked = buttonWasClicked,
-                returnUrl = { urlToListening = it },
-                errorClickOnButton = errorClickOnButton
+                returnMoveButton = { moveButton = it },
+                mainViewModel = viewModel,
+                buttonWasClicked = { buttonWasClicked = it },
+                returnUrlToListening = { urlToListening = it },
+                returnClickOnButtonBoolean = { clickOnButtonBoolean = it },
+                clickOnButtonBoolean = clickOnButtonBoolean,
+                moveButton = moveButton,
+                urlToListening = urlToListening,
+                returnErrorClickOnButton = { errorClickOnButton = it },
+                animatedErrorButton = animatedErrorButton,
+                returnAnimatedErrorButton = { animatedErrorButton = it }
             )
         }
+        ColumnOfContentSurface(
+            viewModel = viewModel,
+            completedResult = completedResult.value,
+            buttonWasClicked = buttonWasClicked,
+            returnUrl = { urlToListening = it },
+            errorClickOnButton = errorClickOnButton
+        )
     }
+
+    AnimatedVisibility(
+        visible = popUpViewNoteCreate.value,
+        modifier = Modifier.fillMaxSize(),
+        enter = slideInVertically(),
+        exit = slideOutVertically()
+    ) {
+        Log.e("Log","text own type")
+        MainScreenAddNotePopup(
+            mainViewModel = viewModel,
+            mainScreenViewModel
+        )
+    }
+
+    /*saveDataForNote.value?.let {
+        viewModel.update(
+            Modeldb(
+                id = it.first.id,
+                word = it.first.word,
+                linkToSound = it.first.linkToSound,
+                definitions = it.first.definitions,
+                examples = it.first.examples,
+                note = it.second,
+                data = it.first.data
+            )
+        )
+    }*/
     DisposableEffect(key1 = scope) {
         return@DisposableEffect onDispose {
             mainScreenViewModel.setSearchedWord(endPoint)
             mainScreenViewModel.setMoveButton(moveButton)
+            mainScreenViewModel.setErrorClickOnButton(errorClickOnButton)
         }
     }
+}
+
+@Composable
+fun MainScreenAddNotePopup(
+    mainViewModel: MainViewModel,
+    mainScreenViewModel: MainScreenViewModel
+) {
+    Popup(
+        alignment = Alignment.Center,
+        offset = IntOffset(0, 600),
+        onDismissRequest = {
+            mainScreenViewModel.setViewNoteCreateState(false)
+        },
+        properties = PopupProperties(focusable = true)
+    ) {
+        MainScreenAddNoteWindow(
+            mainViewModel = mainViewModel,
+            mainScreenViewModel = mainScreenViewModel
+        )
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun MainScreenAddNoteWindow(
+    mainViewModel: MainViewModel,
+    mainScreenViewModel: MainScreenViewModel
+) {
+    val pairModeldbWord = mainScreenViewModel.saveNote.collectAsState()
+    val modeldb = mainViewModel.getSingleRoomData.collectAsState()
+    val localScope = 0
+    Column {
+        mainViewModel.getRoomDataByWord(pairModeldbWord.value?.second?:"")
+        var enableAutoSave by remember { mutableStateOf(true) }
+        var localNote by remember { mutableStateOf("") }
+        Box(
+            modifier = Modifier
+                .width(200.dp)
+                .background(
+                    OwnTheme.colors.secondaryBackground,
+                    shape = OwnTheme.sizesShapes.mediumShape
+                )
+                .border(
+                    width = 1.dp,
+                    color = OwnTheme.colors.tintColor,
+                    shape = OwnTheme.sizesShapes.mediumShape
+                )
+        ) {
+            Column {
+                Row(Modifier.fillMaxWidth()) {
+                    Box(modifier = Modifier
+                        .background(
+                            OwnTheme.colors.backgroundInBackground,
+                            shape = OwnTheme.sizesShapes.mediumShape
+                        )
+                        .clickable {
+                            mainScreenViewModel.setViewNoteCreateState(false)
+                        }
+                    ) {
+                        Icon(
+                            imageVector = ImageVector.vectorResource(id = R.drawable.check_1_save),
+                            contentDescription = "null",
+                            tint = OwnTheme.colors.green,
+                            modifier = Modifier
+                                .background(
+                                    OwnTheme.colors.backgroundInBackground,
+                                    shape = OwnTheme.sizesShapes.mediumShape
+                                )
+                        )
+                    }
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+                        Box(
+                            modifier = Modifier
+                                .background(
+                                    OwnTheme.colors.backgroundInBackground,
+                                    shape = OwnTheme.sizesShapes.mediumShape
+                                )
+                                .clickable {
+                                    mainScreenViewModel.setViewNoteCreateState(false)
+                                    enableAutoSave = false
+                                }
+                                .background(
+                                    OwnTheme.colors.backgroundInBackground,
+                                    shape = OwnTheme.sizesShapes.mediumShape
+                                )
+                        ) {
+                            Icon(
+                                imageVector = ImageVector.vectorResource(id = R.drawable.close_1),
+                                contentDescription = "null",
+                                tint = OwnTheme.colors.red,
+                                modifier = Modifier
+                            )
+                        }
+                    }
+                }
+                OutlinedTextField(
+                    value = localNote,
+                    onValueChange = { localNote = it },
+                    enabled = true,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(
+                            color = OwnTheme.colors.tintColor,
+                            shape = OwnTheme.sizesShapes.mediumShape
+                        ),
+                    colors = TextFieldDefaults.outlinedTextFieldColors(
+                        unfocusedBorderColor = OwnTheme.colors.tintColor,
+                        containerColor = OwnTheme.colors.secondaryBackground,
+                        focusedBorderColor = OwnTheme.colors.tintColor,
+                        cursorColor = OwnTheme.colors.tintColor
+                    ),
+                    textStyle = LocalTextStyle.current.copy(
+                        color = OwnTheme.colors.primaryText,
+                        fontSize = OwnTheme.typography.general.fontSize.value.sp
+                    ),
+                    maxLines = 3
+                )
+            }
+        }
+        DisposableEffect(key1 = localScope) {
+            return@DisposableEffect onDispose {
+                if(enableAutoSave)
+                    modeldb.value?.let {
+                        mainViewModel.update(Modeldb(
+                            id = it.id,
+                            word = it.word,
+                            linkToSound = it.linkToSound,
+                            definitions = it.definitions,
+                            examples = it.examples,
+                            note = localNote,
+                            data = it.data))
+                    }
+            }
+        }
+    }
+
+    Spacer(modifier = Modifier.height(OwnTheme.dp.largeDp))
 }
 
 @OptIn(ExperimentalAnimationApi::class)
@@ -116,9 +294,11 @@ fun MainScreenSearchButtonRow(
     clickOnButtonBoolean: Boolean,
     moveButton: Boolean,
     urlToListening: String?,
-    returnErrorClickOnButton: (Boolean) -> Unit
+    returnErrorClickOnButton: (Boolean) -> Unit,
+    animatedErrorButton: Boolean,
+    returnAnimatedErrorButton: (Boolean) -> Unit
 ) {
-    var animatedErrorButton: Boolean by remember { mutableStateOf(false) }
+
     val scale by animateFloatAsState(
         targetValue = if (animatedErrorButton) 1.1f else 1f,
         animationSpec = repeatable(
@@ -127,7 +307,7 @@ fun MainScreenSearchButtonRow(
             repeatMode = RepeatMode.Reverse
         ),
         finishedListener = {
-            animatedErrorButton = false
+            returnAnimatedErrorButton(false)
         }
     )
     val errorColor by animateColorAsState(
@@ -160,19 +340,18 @@ fun MainScreenSearchButtonRow(
             val scope = rememberCoroutineScope()
             Button(
                 onClick = {
-                    mainViewModel.getCompletedResult(endPoint)
-                    buttonWasClicked(true)
-                    returnUrlToListening(null)
-                    scope.launch {
-                        returnClickOnButtonBoolean(!clickOnButtonBoolean)
-                        if (endPoint.isEmpty() && !moveButton) {
-                            animatedErrorButton = true
-                            returnErrorClickOnButton(true)
-                        } else returnErrorClickOnButton(false)
-                        if (!endPoint.isEmpty()) {
-                            returnMoveButton(true)
-                        }
-                    }
+                    mainScreenDoSearchButton(
+                        mainViewModel = mainViewModel,
+                        endPoint = endPoint,
+                        returnButtonWasClicked = { buttonWasClicked(it) },
+                        returnUrlToListening = { returnUrlToListening(it) },
+                        scope = scope,
+                        returnClickOnButtonBoolean = { returnClickOnButtonBoolean(it) },
+                        clickOnButtonBoolean = clickOnButtonBoolean,
+                        moveButton = moveButton,
+                        returnAnimatedErrorButton = { returnAnimatedErrorButton(it) },
+                        returnErrorClickOnButton = { returnErrorClickOnButton(it) },
+                        returnMoveButton = { returnMoveButton(it) })
                 },
                 modifier = Modifier
                     .graphicsLayer {
@@ -184,7 +363,13 @@ fun MainScreenSearchButtonRow(
                         color = errorColor,
                         shape = RoundedCornerShape(100)
                     )
-                    .shadow(5.dp, RoundedCornerShape(40)),
+                    .shadow(
+                        10.dp,
+                        shape = OwnTheme.sizesShapes.largeShape,
+                        spotColor = OwnTheme.colors.secondaryBackground,
+                        ambientColor = OwnTheme.colors.secondaryBackground,
+                        clip = true
+                    ),
                 colors = ButtonDefaults.buttonColors(containerColor = OwnTheme.colors.button)
             ) {
                 Text(
@@ -239,6 +424,34 @@ fun MainScreenSearchButtonRow(
     }
 }
 
+fun mainScreenDoSearchButton(
+    mainViewModel: MainViewModel,
+    endPoint: String,
+    returnButtonWasClicked: (Boolean) -> Unit,
+    returnUrlToListening: (String?) -> Unit,
+    scope: CoroutineScope,
+    returnClickOnButtonBoolean: (Boolean) -> Unit,
+    clickOnButtonBoolean: Boolean,
+    moveButton: Boolean,
+    returnAnimatedErrorButton: (Boolean) -> Unit,
+    returnErrorClickOnButton: (Boolean) -> Unit,
+    returnMoveButton: (Boolean) -> Unit
+) {
+    mainViewModel.getCompletedResult(endPoint)
+    returnButtonWasClicked(true)
+    returnUrlToListening(null)
+    scope.launch {
+        returnClickOnButtonBoolean(!clickOnButtonBoolean)
+        if (endPoint.isEmpty() && !moveButton) {
+            returnAnimatedErrorButton(true)
+            returnErrorClickOnButton(true)
+        } else returnErrorClickOnButton(false)
+        if (!endPoint.isEmpty()) {
+            returnMoveButton(true)
+        }
+    }
+}
+
 @SuppressLint("CoroutineCreationDuringComposition")
 @Composable
 fun ColumnOfContentSurface(
@@ -282,7 +495,16 @@ fun ColumnOfContentSurface(
 fun SearchBar(
     endPoint: String,
     returnEndPoint: (endPoint: String) -> Unit,
-    moveButton: (result: Boolean) -> Unit
+    moveButton: Boolean,
+    mainViewModel: MainViewModel,
+    buttonWasClicked: (Boolean) -> Unit,
+    returnUrlToListening: (String?) -> Unit,
+    scope: CoroutineScope,
+    returnClickOnButtonBoolean: (Boolean) -> Unit,
+    clickOnButtonBoolean: Boolean,
+    animatedErrorButton: (Boolean) -> Unit,
+    returnErrorClickOnButton: (Boolean) -> Unit,
+    returnMoveButton: (Boolean) -> Unit
 ) {
     var localEndPoint by remember {
         mutableStateOf(endPoint)
@@ -292,7 +514,7 @@ fun SearchBar(
         onValueChange = {
             localEndPoint = it
             returnEndPoint(it)
-            if (it.isEmpty()) moveButton(false)
+            if (it.isEmpty()) returnMoveButton(false)
         },
         modifier = Modifier
             .border(3.dp, color = OwnTheme.colors.tintColor, shape = CircleShape)
@@ -316,6 +538,22 @@ fun SearchBar(
                     fontSize = OwnTheme.typography.general.fontSize.value.sp
                 )
             )
+        },
+        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+        keyboardActions = KeyboardActions {
+            mainViewModel.getCompletedResult(endPoint)
+            buttonWasClicked(true)
+            returnUrlToListening(null)
+            scope.launch {
+                returnClickOnButtonBoolean(!clickOnButtonBoolean)
+                if (endPoint.isEmpty() && !moveButton) {
+                    animatedErrorButton(true)
+                    returnErrorClickOnButton(true)
+                } else returnErrorClickOnButton(false)
+                if (!endPoint.isEmpty()) {
+                    returnMoveButton(true)
+                }
+            }
         }
     )
 }
@@ -402,7 +640,8 @@ fun MainCard(
                 .replace(":", "")
                 .replace(")", "")
                 .replace(";", ""),
-            closeThisWindow = { showWindowAbove = it }
+            closeThisWindow = { showWindowAbove = it },
+            //popupSaveNoteState = {popupSaveNoteState(it)}
         )
     }
     Box(
@@ -430,6 +669,7 @@ fun MainCard(
                         color = OwnTheme.colors.primaryText,
                         modifier = Modifier
                             .clickable {
+                                mainScreenViewModel.setViewNoteCreateState(true)
                                 localText = ""
                                 if (completedResult.word.isNotEmpty()) {
                                     scope.launch {
@@ -448,6 +688,7 @@ fun MainCard(
                                             localDate.year.toString()
                                         )
                                         mainViewModel.insert(localModeldb)
+                                        mainScreenViewModel.setSaveNote(Pair(localModeldb,localModeldb.word))
                                     }
                                 }
                             }, fontSize = OwnTheme.typography.general.fontSize.value.sp

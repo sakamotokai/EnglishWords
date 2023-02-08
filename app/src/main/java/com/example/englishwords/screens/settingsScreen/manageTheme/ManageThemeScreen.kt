@@ -12,8 +12,10 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import com.example.englishwords.R
 import com.example.englishwords.navigation.SettingsScreen
 import com.example.englishwords.screens.ourUiElements.customClickable
 import com.example.englishwords.screens.settingsScreen.SettingsArrowForward
@@ -38,7 +40,7 @@ fun ManageTheme(navController: NavHostController) {
             Column {
                 Spacer(modifier = Modifier.height(OwnTheme.dp.normalDp))
                 ManageScreenElementCard(
-                    icon = if (isDarkMode.value) Icons.Filled.Email else Icons.Filled.Search,
+                    icon = if (isDarkMode.value) ImageVector.vectorResource(R.drawable.darktheme_1) else ImageVector.vectorResource(R.drawable.lighttheme_1),
                     text = "Enable dark mode",
                     endElement = {
                         OwnToggleButton(
@@ -51,7 +53,7 @@ fun ManageTheme(navController: NavHostController) {
                     text = SettingsScreen.ChangeColor.route,
                     onClick = { navController.navigate(SettingsScreen.ChangeColor.route)},
                     endElement = { SettingsArrowForward() },
-                icon = SettingsScreen.ChangeColor.icon)
+                icon = ImageVector.vectorResource(SettingsScreen.ChangeColor.icon))
                 Spacer(modifier = Modifier.height(OwnTheme.dp.normalDp))
             }
         }
@@ -71,7 +73,7 @@ fun OwnToggleButton(work: () -> Unit, darkModeState: Boolean) {
 fun ManageScreenElementCard(endElement: @Composable () -> Unit, icon: ImageVector, text: String,onClick:()->Unit = {}) {
     Row(
         Modifier
-            .clickable {
+            .customClickable {
                 onClick()
             }
             .fillMaxWidth()

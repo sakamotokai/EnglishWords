@@ -12,14 +12,17 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.*
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import com.example.englishwords.R
 import com.example.englishwords.navigation.SettingsScreen
 import com.example.englishwords.screens.ourUiElements.CustomOutlinedTextField
 import com.example.englishwords.screens.ourUiElements.customClickable
 import com.example.englishwords.screens.settingsScreen.manageTheme.OwnToggleButton
+import com.example.englishwords.screens.settingsScreen.notifications.NotificationViewModel
 import com.example.englishwords.ui.theme.ownTheme.OwnTheme
 import org.koin.androidx.compose.get
 
@@ -64,7 +67,7 @@ fun SettingsThemeBox(navController: NavHostController) {
     SettingsElementCard(
         settingName = SettingsScreen.CustomTheme.route,
         settingRoute = SettingsScreen.CustomTheme.route,
-        settingIcon = SettingsScreen.CustomTheme.icon,
+        settingIcon = ImageVector.vectorResource(SettingsScreen.CustomTheme.icon),
         endElement = {
             SettingsArrowForward()
         },
@@ -75,6 +78,10 @@ fun SettingsThemeBox(navController: NavHostController) {
 
 @Composable
 fun SettingsNotificationBox(navController: NavHostController) {
+    val notificationViewModel: NotificationViewModel = get()
+    val getRemindedNotifications =
+        notificationViewModel.isRemindedNotifications.collectAsState()
+    val getWordNotifications = notificationViewModel.isWordNotifications.collectAsState()
     Spacer(modifier = Modifier.height(OwnTheme.dp.smallDp))
     SettingsElementCard(
         settingName = SettingsScreen.NotificationScreen.route,
@@ -83,7 +90,10 @@ fun SettingsNotificationBox(navController: NavHostController) {
         },
         navController = navController,
         settingRoute = SettingsScreen.NotificationScreen.route,
-        settingIcon = SettingsScreen.NotificationScreen.icon
+        settingIcon = if (!getRemindedNotifications.value && !getWordNotifications.value) ImageVector.vectorResource(
+            id = R.drawable.notification_off_1
+        )
+        else ImageVector.vectorResource(id = R.drawable.notification_on_1)
     )
     Spacer(modifier = Modifier.height(OwnTheme.dp.smallDp))
 }
@@ -96,7 +106,7 @@ fun SettingsDeleteWordBox(settingsScreenViewModel: SettingsViewModel) {
         endElement = {
             OwnToggleButton(
                 work = {
-                       settingsScreenViewModel.changeDeleteWordAfterState()
+                    settingsScreenViewModel.changeDeleteWordAfterState()
                 },
                 darkModeState = settingsScreenViewModel.deleteWordAfter.collectAsState().value
             )
@@ -179,7 +189,7 @@ fun SettingsElementCard2(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Icon(
-                imageVector = settingsElement.icon,
+                imageVector = ImageVector.vectorResource(settingsElement.icon),
                 contentDescription = settingsElement.route
             )
             Spacer(modifier = Modifier.width(OwnTheme.dp.normalDp))

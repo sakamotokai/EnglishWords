@@ -94,7 +94,11 @@ fun WordKeepedSearchBar(returnWord: (String) -> Unit) {
             )
         },
         shape = CircleShape,
-        colors = TextFieldDefaults.outlinedTextFieldColors(unfocusedBorderColor = OwnTheme.colors.secondaryBackground),
+        colors = TextFieldDefaults.outlinedTextFieldColors(
+            unfocusedBorderColor = OwnTheme.colors.secondaryBackground,
+            containerColor = OwnTheme.colors.secondaryBackground,
+            focusedBorderColor = OwnTheme.colors.tintColor
+        ),
         modifier = Modifier
             .height(OwnTheme.dp.bigDp)
             .fillMaxWidth()

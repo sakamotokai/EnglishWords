@@ -15,8 +15,10 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.englishwords.R
 import com.example.englishwords.screens.ourUiElements.customClickable
 import com.example.englishwords.ui.theme.ownTheme.OwnTheme
 import org.koin.androidx.compose.get
@@ -50,7 +52,8 @@ fun NotificationScreenColumn(notificationViewModel: NotificationViewModel) {
                         darkModeState = getRemindedNotifications.value
                     )
                 },
-                icon = Icons.Filled.Notifications,
+                icon = if(getRemindedNotifications.value) ImageVector.vectorResource(id = R.drawable.notification_on_1)
+                else ImageVector.vectorResource(id = R.drawable.notification_off_1),
                 text = "Get reminded notifications"
             )
             NotificationScreenElementCard(
@@ -60,7 +63,8 @@ fun NotificationScreenColumn(notificationViewModel: NotificationViewModel) {
                         darkModeState = getWordNotifications.value
                     )
                 },
-                icon = Icons.Filled.Notifications,
+                icon = if(getWordNotifications.value) ImageVector.vectorResource(id = R.drawable.notification_on_1)
+                else ImageVector.vectorResource(id = R.drawable.notification_off_1),
                 text = "Get word notifications"
             )
             if (getWordNotifications.value)
@@ -81,7 +85,7 @@ fun NotificationScreenColumn(notificationViewModel: NotificationViewModel) {
                             }
                         )
                     },
-                    icon = Icons.Filled.Info,
+                    icon = ImageVector.vectorResource(id = R.drawable.compare_arrows_1),
                     text = "Select time between word notifications"
                 )
         }
@@ -157,7 +161,7 @@ fun NotificationScreenElementCard(
 ) {
     Row(
         Modifier
-            .clickable {
+            .customClickable {
                 onClick()
             }
             .fillMaxWidth()

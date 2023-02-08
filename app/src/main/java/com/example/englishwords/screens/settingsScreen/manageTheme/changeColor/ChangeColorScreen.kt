@@ -261,7 +261,9 @@ fun ChangeColorExpandedCard(
             .padding(start = OwnTheme.dp.smallDp, end = OwnTheme.dp.smallDp)
     ) {
         Column {
+            Spacer(modifier = Modifier.height(OwnTheme.dp.smallDp))
             Row {
+                Spacer(modifier = Modifier.width(OwnTheme.dp.smallDp))
                 Text(
                     text = currentName,
                     fontSize = OwnTheme.typography.general.fontSize,
@@ -353,9 +355,10 @@ fun ChangeColorTextSizeBox(settingsViewModel: SettingsViewModel) {
             )
             .fillMaxWidth()
     ) {
-        val textSizeStart = OwnTheme.typography.general.fontSize.value
-        var textSize by remember { mutableStateOf(textSizeStart) }
         Column {
+            val scope = rememberCoroutineScope()
+            val textSizeStart = OwnTheme.typography.general.fontSize.value
+            var textSize by remember { mutableStateOf(textSizeStart) }
             Spacer(modifier = Modifier.height(OwnTheme.dp.mediumDp))
             Text(
                 text = "Set text size",
@@ -370,14 +373,18 @@ fun ChangeColorTextSizeBox(settingsViewModel: SettingsViewModel) {
                 value = textSize,
                 onValueChange = {
                     textSize = it
-                    settingsViewModel.setTextSize(it)
+                    scope.launch {
+                    val rememberTextSize = textSize
+                        delay(200)
+                        if(rememberTextSize == textSize) settingsViewModel.setTextSize(it)
+                    }
                 },
                 valueRange = 14f..25f
             )
             Spacer(modifier = Modifier.height(OwnTheme.dp.normalDp))
             Text(
                 text = "You can try change to size of this text",
-                fontSize = OwnTheme.typography.general.fontSize.value.sp,
+                fontSize = textSize.sp,
                 color = OwnTheme.colors.primaryText,
                 modifier = Modifier
                     .padding(start = OwnTheme.dp.mediumDp)
