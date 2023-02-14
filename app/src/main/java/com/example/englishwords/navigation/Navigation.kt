@@ -14,6 +14,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.englishwords.R
+import com.example.englishwords.screens.cardsScreen.CardsScreen
 import com.example.englishwords.screens.mainScreen.MainScreen
 import com.example.englishwords.screens.settingsScreen.SettingsScreen
 import com.example.englishwords.screens.settingsScreen.manageTheme.ManageTheme
@@ -21,10 +22,11 @@ import com.example.englishwords.screens.settingsScreen.manageTheme.changeColor.C
 import com.example.englishwords.screens.settingsScreen.notifications.NotificationsScreen
 import com.example.englishwords.screens.wordKeepedScreen.WordKeepedScreen
 
-sealed class Screen(val route: String, val icon: ImageVector) {
-    object MainScreen : Screen("Main", Icons.Filled.Home)
-    object WordKeeped : Screen("Saved Word", Icons.Filled.Star)
-    object SettingsScreen:Screen("Settings",Icons.Filled.Settings)
+sealed class Screen(val route: String, val icon: Int) {
+    object MainScreen : Screen("Main", R.drawable.home_1)
+    object WordKeeped : Screen("Saved Word", R.drawable.star_1)
+    object SettingsScreen:Screen("Settings",R.drawable.settings_1)
+    object CardsScreen:Screen("Cards",R.drawable.credit_card_1)
 }
 
 sealed class SettingsScreen(val route: String,val icon:Int){
@@ -59,6 +61,9 @@ fun Navigation(
         }
         composable(SettingsScreen.NotificationScreen.route){
             NotificationsScreen()
+        }
+        composable(Screen.CardsScreen.route){
+            CardsScreen()
         }
     }
 }

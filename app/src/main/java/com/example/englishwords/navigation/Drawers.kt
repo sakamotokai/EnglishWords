@@ -10,6 +10,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -41,10 +43,12 @@ fun MainDrawerMenu(navController: NavHostController,scaffoldState: ScaffoldState
             Spacer(modifier = Modifier.height(OwnTheme.dp.normalDp))
         }
         Spacer(modifier = Modifier.height(OwnTheme.dp.normalDp))
-        Box(modifier = Modifier.background(
-            OwnTheme.colors.secondaryBackground,
-            shape = OwnTheme.sizesShapes.smallShape
-        ).fillMaxSize())
+        Box(modifier = Modifier
+            .background(
+                OwnTheme.colors.secondaryBackground,
+                shape = OwnTheme.sizesShapes.smallShape
+            )
+            .fillMaxSize())
     }
 }
 
@@ -80,7 +84,7 @@ fun DrawerCard(item: Screen, navController: NavHostController,scaffoldState: Sca
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Icon(
-                imageVector = item.icon,
+                imageVector = ImageVector.vectorResource(id = item.icon),
                 contentDescription = item.route,
                 tint = OwnTheme.colors.tintColor
             )
@@ -99,7 +103,8 @@ class DrawerItems : DrawerItemsInterface {
     override val screensItem: List<Screen> = listOf(
         Screen.MainScreen,
         Screen.WordKeeped,
-        Screen.SettingsScreen
+        Screen.SettingsScreen,
+        Screen.CardsScreen
     )
 }
 

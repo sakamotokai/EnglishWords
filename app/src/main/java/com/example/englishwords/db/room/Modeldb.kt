@@ -16,6 +16,7 @@ interface ModelRoomDatabase {
     var examples: List<String>
     var note:String
     var data:List<String>
+    var similar:List<String>
 }
 
 interface ModelWorkedRoomDatabase{
@@ -49,5 +50,6 @@ class Modeldb(
     override var definitions: List<String> = listOf(),
     override var examples: List<String> = listOf(),
     override var note: String = "",
-    override var data: List<String> = listOf()
+    override var data: List<String> = listOf(),
+    override var similar: List<String> = listOf()
 ) : ModelRoomDatabase
