@@ -22,7 +22,11 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
 @Composable
-fun MainDrawerMenu(navController: NavHostController,scaffoldState: ScaffoldState,scope: CoroutineScope) {
+fun MainDrawerMenu(
+    navController: NavHostController,
+    scaffoldState: ScaffoldState,
+    scope: CoroutineScope
+) {
     Column(
         Modifier
             .fillMaxSize()
@@ -39,21 +43,28 @@ fun MainDrawerMenu(navController: NavHostController,scaffoldState: ScaffoldState
         )
         Spacer(modifier = Modifier.height(OwnTheme.dp.mediumDp))
         DrawerItems().screensItem.forEach {
-            DrawerCard(item = it, navController,scaffoldState,scope)
+            DrawerCard(item = it, navController, scaffoldState, scope)
             Spacer(modifier = Modifier.height(OwnTheme.dp.normalDp))
         }
         Spacer(modifier = Modifier.height(OwnTheme.dp.normalDp))
-        Box(modifier = Modifier
-            .background(
-                OwnTheme.colors.secondaryBackground,
-                shape = OwnTheme.sizesShapes.smallShape
-            )
-            .fillMaxSize())
+        Box(
+            modifier = Modifier
+                .background(
+                    OwnTheme.colors.secondaryBackground,
+                    shape = OwnTheme.sizesShapes.smallShape
+                )
+                .fillMaxSize()
+        )
     }
 }
 
 @Composable
-fun DrawerCard(item: Screen, navController: NavHostController,scaffoldState: ScaffoldState,scope: CoroutineScope) {
+fun DrawerCard(
+    item: Screen,
+    navController: NavHostController,
+    scaffoldState: ScaffoldState,
+    scope: CoroutineScope
+) {
     Spacer(modifier = Modifier.width(OwnTheme.dp.normalDp))
     Box(
         modifier = Modifier
@@ -103,8 +114,8 @@ class DrawerItems : DrawerItemsInterface {
     override val screensItem: List<Screen> = listOf(
         Screen.MainScreen,
         Screen.WordKeeped,
-        Screen.SettingsScreen,
-        Screen.CardsScreen
+        Screen.CardsScreen,
+        Screen.SettingsScreen
     )
 }
 

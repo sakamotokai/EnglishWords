@@ -47,17 +47,21 @@ class MainViewModel(
                 _completedResult.value = withContext(Dispatchers.Default) {
                     if (data.isSuccessful) {
                         var word: String? = null
-                        var definit: MutableList<String> = mutableListOf()
-                        var instanc: MutableList<String> = mutableListOf()
+                        val definit: MutableList<String> = mutableListOf()
+                        val instanc: MutableList<String> = mutableListOf()
+                        val similar:MutableList<String> = mutableListOf()
                         var urlTo: String? = null
                         data.body()!!.forEach { model ->
                             word = model.word
                             model.phonetics.forEach { url ->
                                 urlTo = url.audio
                             }
+                            //similar.addAll(model.similar)
                             model.meanings.forEach { meaning ->
+                                similar.addAll(meaning.synonyms)
                                 meaning.definitions.forEach { definition ->
                                     definit.add(definition.definition)
+
                                     if (definition.example != null)
                                         instanc.add(definition.example)
                                 }
@@ -68,11 +72,13 @@ class MainViewModel(
                             word = word,
                             definition = definit,
                             instance = instanc,
-                            urlToListening = urlTo
+                            urlToListening = urlTo,
+                            similar = similar
                         )
                     } else {
                         return@withContext CompletedResult(
                             isSuccess = false,
+                            null,
                             null,
                             null,
                             null,

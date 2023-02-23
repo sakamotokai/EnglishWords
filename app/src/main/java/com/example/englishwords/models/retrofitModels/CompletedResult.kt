@@ -5,5 +5,6 @@ data class CompletedResult(
     val word:String?,
     val definition:List<String>?,
     val instance:List<String>?,
-    val urlToListening:String?
+    val urlToListening:String?,
+    val similar:List<String>?
 )

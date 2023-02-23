@@ -5,5 +5,6 @@ data class MainEnglishModelItem(
     val meanings: List<Meaning>,
     val phonetics: List<Phonetic>,
     val sourceUrls: List<String>,
-    val word: String
+    val word: String,
+    val similar:List<String>
 )

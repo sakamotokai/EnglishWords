@@ -273,7 +273,8 @@ fun MainScreenAddNoteWindow(
                             definitions = it.definitions,
                             examples = it.examples,
                             note = localNote,
-                            data = it.data))
+                            data = it.data,
+                        similar = it.similar))
                     }
             }
         }
@@ -679,6 +680,8 @@ fun MainCard(
                                             completedResult.definition ?: listOf("No Data")
                                         localModeldb.examples =
                                             completedResult.instance ?: listOf("No Data")
+                                        localModeldb.similar =
+                                            completedResult.similar ?: listOf("No Similar")
                                         localModeldb.linkToSound =
                                             completedResult.urlToListening ?: ""
                                         localModeldb.word = completedResult.word

@@ -40,7 +40,7 @@ fun OwnTheme(
     val settingsViewModel: SettingsViewModel = get()
     val colors =
         if (darkTheme) {
-            baseDarkPalette.copy(//TODO zdelat' etu huinu blyat
+            baseDarkPalette.copy(
                 tintColor = Color(settingsViewModel.tintColorDark.collectAsState().value.toULong()),
                 //primaryBackground = Color(settingsViewModel.primaryBackgroundDark.collectAsState().value),
                 black = Color(settingsViewModel.blackDark.collectAsState().value),
