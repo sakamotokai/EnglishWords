@@ -19,7 +19,7 @@ class DoReceiverImpl(override val context: Context):
         val intent = Intent(context, receiver::class.java)
         val pendingIntent = PendingIntent.getBroadcast(
             context, alarmManager.hashCode(), intent,
-            0
+            PendingIntent.FLAG_IMMUTABLE
         )
         alarmManager.setInexactRepeating(
             AlarmManager.RTC_WAKEUP,calendar.timeInMillis + triggerAtMillis, intervalAtMillis, pendingIntent)

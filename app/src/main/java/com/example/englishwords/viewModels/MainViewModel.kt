@@ -31,6 +31,9 @@ class MainViewModel(
     private var _completedResult:MutableStateFlow<CompletedResult?> = MutableStateFlow(null)
     var completedResult:StateFlow<CompletedResult?> = _completedResult
 
+    private var _cardList:MutableStateFlow<List<Modeldb>?> = MutableStateFlow(null)
+    var cardList:StateFlow<List<Modeldb>?> = _cardList
+
     private var _goalWord:MutableStateFlow<String?> = MutableStateFlow(null)
     var goalWord:StateFlow<String?> = _goalWord
 
@@ -103,6 +106,17 @@ class MainViewModel(
                     Log.e("Log","finally")
                 loading.value = false
             }
+        }
+    }
+
+    fun getCardList(){
+        viewModelScope.launch {
+            val list:MutableList<Modeldb> = mutableListOf()
+            _getAllRoomData.value?.forEach {
+                if (it.isUsingInCard)
+                    list.add(it)
+            }
+            _cardList.value = list
         }
     }
     fun insert(modeldb: Modeldb){

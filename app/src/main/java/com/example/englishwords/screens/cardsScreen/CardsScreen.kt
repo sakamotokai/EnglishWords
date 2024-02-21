@@ -7,115 +7,386 @@ import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.ImageDecoder
+import android.graphics.drawable.VectorDrawable
 import android.net.Uri
 import android.os.Build
 import android.provider.MediaStore
 import android.util.Log
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.animateIntAsState
+import androidx.compose.animation.core.animateValueAsState
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.GenericShape
 import androidx.compose.material.Button
+import androidx.compose.material.ButtonDefaults
+import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.FloatingActionButton
 import androidx.compose.material.Icon
+import androidx.compose.material.OutlinedButton
+import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.outlined.Delete
+import androidx.compose.material.rememberDismissState
+import androidx.compose.material3.ButtonColors
+import androidx.compose.material3.DismissDirection
+import androidx.compose.material3.DismissState
+import androidx.compose.material3.DismissValue
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.SwipeToDismiss
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.blur
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.*
+import androidx.compose.ui.graphics.painter.BrushPainter
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
-import androidx.core.net.toUri
+import com.example.englishwords.R
 import com.example.englishwords.db.room.Modeldb
+import com.example.englishwords.screens.ourUiElements.CustomOutlinedTextField
 import com.example.englishwords.ui.theme.ownTheme.OwnTheme
 import com.example.englishwords.viewModels.MainViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.collect
 import org.koin.androidx.compose.get
 import java.io.ByteArrayOutputStream
-import java.io.File
 import java.util.*
 
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
+@SuppressLint("UnusedMaterialScaffoldPaddingParameter")
 @Composable
 fun CardsScreen() {
     val mainViewModel: MainViewModel = get()
     val scope = rememberCoroutineScope()
     LaunchedEffect(key1 = scope) {
         mainViewModel.getAllFromRoom()
+        delay(500)
+        mainViewModel.getCardList()
     }
-    Column {
-        getListByDataSort(mainViewModel)
+    val cardScreenVM: CardScreenVM = get()
+    var isChoseScreenOpen by remember { mutableStateOf(false) }
+    val allRoomData = mainViewModel.getAllRoomData.collectAsState()
+    val cardList = mainViewModel.cardList.collectAsState()
+    Log.e("localError", "-----------------")
+
+    if(!isChoseScreenOpen)
+    CardList(
+        mainViewModel = mainViewModel,
+        cardScreenVM = cardScreenVM
+    )
+
+    if (isChoseScreenOpen)
+        Box(
+            Modifier
+                .fillMaxSize()
+        ) {
+            ChoseWordScreen(
+                mainViewModel,
+                isChoseScreenOpen = { isChoseScreenOpen = it },
+                value = isChoseScreenOpen
+            )
+        }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(end = 16.dp, bottom = 16.dp),
+        verticalArrangement = Arrangement.Bottom,
+        horizontalAlignment = Alignment.End,
+    ) {
+        AddCardButton(isChoseScreenOpen = { isChoseScreenOpen = it }, value = isChoseScreenOpen)
+    }
+
+    Log.e("localError", "ERRORRRR")
+}
+
+
+@ExperimentalMaterialApi
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun MyUI(
+    list:List<Modeldb>,
+    mainViewModel: MainViewModel,
+    returnCardList: (List<Modeldb>) -> Unit,
+    allRoomData: List<Modeldb>?
+) {
+    // list for the lazy column
+    val peopleList = remember { mutableStateListOf<Modeldb>() }
+    peopleList.clear()
+    peopleList.addAll(list)
+
+    val contextForToast = LocalContext.current.applicationContext
+
+    LazyColumn(
+        modifier = Modifier.fillMaxSize(),
+        contentPadding = PaddingValues(vertical = 12.dp) // margin
+    ) {
+        items(
+            items = peopleList,
+            key = { people ->
+                people.id
+            }
+        ) { people ->
+            val dismissState = androidx.compose.material3.rememberDismissState()
+
+            // check if the user swiped
+            if (dismissState.isDismissed(direction = DismissDirection.EndToStart)) {
+                Toast.makeText(contextForToast, "Delete", Toast.LENGTH_SHORT).show()
+                //mainViewModel.update(people.apply { isUsingInCard = false })
+                peopleList.remove(people)
+                returnCardList(peopleList)
+            }
+
+            SwipeToDismiss(
+                state = dismissState,
+                directions = setOf(
+                    DismissDirection.EndToStart
+                ),
+                background = {
+                    // this background is visible when we swipe.
+                    // it contains the icon
+
+                    // background color
+                    val backgroundColor by animateColorAsState(
+                        when (dismissState.targetValue) {
+                            DismissValue.DismissedToStart -> Color.Red.copy(alpha = 0.8f)
+                            else -> Color.White
+                        }
+                    )
+
+                    // icon size
+                    val iconScale by animateFloatAsState(
+                        targetValue = if (dismissState.targetValue == DismissValue.DismissedToStart) 1.3f else 0.5f
+                    )
+
+                    Box(
+                        Modifier
+                            .fillMaxSize()
+                            .background(color = backgroundColor)
+                            .padding(end = 16.dp), // inner padding
+                        contentAlignment = Alignment.CenterEnd // place the icon at the end (left)
+                    ) {
+                        Icon(
+                            modifier = Modifier.scale(iconScale),
+                            imageVector = Icons.Outlined.Delete,
+                            contentDescription = "Delete",
+                            tint = Color.White
+                        )
+                    }
+                },
+                dismissContent = {
+                    // list item
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(color = Color.White)
+                    ) {
+                        Text(
+                            text = people.word,
+                            fontSize = 20.sp,
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(top = 16.dp, bottom = 16.dp, start = 12.dp)
+                        )
+                    }
+                }
+            )
+        }
     }
 }
 
-@SuppressLint("UnrememberedMutableState")
+
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun getListByDataSort(mainViewModel: MainViewModel) {
-    val localData: MutableList<String> = mutableListOf()
-    val listOfModeldb = mainViewModel.getAllRoomData.collectAsState()
-    var localCounter = -1
-    val listModeldb = mutableListOf(mutableListOf<Modeldb>())
-    listOfModeldb.value?.forEach {
-        if (it.data == localData) {
-            listModeldb[localCounter].add(it)
-        } else {
-            localCounter++
-            localData.clear()
-            localData.addAll(it.data)
-            if (localCounter != 0) listModeldb.add(mutableListOf(it))
-            else listModeldb[localCounter].add(it)
+fun CardList(
+    mainViewModel: MainViewModel,
+    cardScreenVM: CardScreenVM
+) {
+    val scope = rememberCoroutineScope()
+    var parentRoomData = remember{ mutableStateListOf<Modeldb>() }
+        LaunchedEffect(scope){
+        mainViewModel.getAllRoomData.collect{
+            parentRoomData.clear()
+            it?.let { parentRoomData.addAll(it) }
         }
     }
 
-    Log.e("Log", "my error")
+    var activeCardList = remember { mutableListOf<Modeldb>() }
+    activeCardList.clear()
+    Log.e("localError", "Inside")
 
-    LazyColumn {
-        items(listModeldb.reversed()) {
-            Spacer(modifier = Modifier.height(OwnTheme.dp.largeDp))
-            Text(
-                text = try {
-                    it[0].data[0] + "." + it[0].data[1] + "." + it[0].data[2]
-                } catch (e: Exception) {
-                    "No data"
-                },
-                color = OwnTheme.colors.primaryText,
-                fontSize = OwnTheme.typography.general.fontSize,
-                modifier = Modifier
-                    .padding(start = OwnTheme.dp.normalDp)
-            )
-            LazyRow {
-                items(it.reversed()) {
-                    var changeCard by remember { mutableStateOf(false) }
-                    Spacer(modifier = Modifier.width(OwnTheme.dp.normalDp))
-                    //CardsScreenMainCardFront(modeldb = it, height = 150, width = 350)
-/*                    Button(onClick = { changeCard = !changeCard }) {
+    if(parentRoomData.isNotEmpty()) {
+        activeCardList.clear()
+        parentRoomData.toList().forEach {
+            Log.e("localError", "8")
+            if (it.isUsingInCard) {
+                activeCardList.add(it)
+            }
+        }
+    }
+    SwipeToDeleteCardList(
+        activeCardList = activeCardList,
+        mainViewModel = mainViewModel,
+        cardScreenVM = cardScreenVM
+    )
+}
 
-                    }*/
-                    Log.e("Log", "Scaffold Log")
-                    if (changeCard) {
-                        CardsScreenMainCardBack(
-                            mainViewModel = mainViewModel,
-                            modeldb = it,
-                            height = 150,
-                            width = 350,
-                            setOtherSide = { changeCard = it }
-                        )
-                    } else {
-                        CardsScreenMainCardFront(
-                            modeldb = it,
-                            height = 150,
-                            width = 350,
-                            setOtherSide = { changeCard = it }
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun SwipeToDeleteCardList(
+    activeCardList: MutableList<Modeldb>,
+    mainViewModel: MainViewModel,
+    cardScreenVM: CardScreenVM
+) {
+    LazyColumn(
+        Modifier
+            .fillMaxSize()
+    ) {
+        items(
+            activeCardList,
+            key = { model ->
+                model.id
+            }
+        ) {
+            Log.e("localError", "7")
+            val dismissState = androidx.compose.material3.rememberDismissState()
+            if (dismissState.isDismissed(direction = DismissDirection.EndToStart)) {
+                mainViewModel.update(it.apply { isUsingInCard = false })
+                //roomData.remove(it)
+                //removedModels.add(it)
+            }
+            SwipeToDismiss(
+                state = dismissState,
+                directions = setOf(
+                    DismissDirection.EndToStart
+                ),
+                background = {
+                    // this background is visible when we swipe.
+                    // it contains the icon
+
+                    // background color
+                    val backgroundColor by animateColorAsState(
+                        when (dismissState.targetValue) {
+                            DismissValue.DismissedToStart -> Color.Red.copy(alpha = 0.8f)
+                            else -> Color.White
+                        }
+                    )
+
+                    // icon size
+                    val iconScale by animateFloatAsState(
+                        targetValue = if (dismissState.targetValue == DismissValue.DismissedToStart) 1.3f else 0.5f
+                    )
+
+                    Box(
+                        Modifier
+                            .fillMaxSize()
+                            .background(color = backgroundColor)
+                            .padding(end = 16.dp), // inner padding
+                        contentAlignment = Alignment.CenterEnd // place the icon at the end (left)
+                    ) {
+                        Icon(
+                            modifier = Modifier.scale(iconScale),
+                            imageVector = Icons.Outlined.Delete,
+                            contentDescription = "Delete",
+                            tint = Color.White
                         )
                     }
-                    Spacer(modifier = Modifier.width(OwnTheme.dp.normalDp))
+                },
+                dismissContent = {
+                    Log.e("localError", "6")
+                    // list item
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                    ) {
+                        CertainCard(
+                            modeldb = it,
+                            mainViewModel = mainViewModel,
+                            cardScreenVM = cardScreenVM
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                    }
+                }
+            )
+
+        }
+    }
+}
+
+@SuppressLint("UnusedMaterialScaffoldPaddingParameter")
+@Composable
+private fun ChoseWordScreen(
+    mainViewModel: MainViewModel,
+    isChoseScreenOpen: (Boolean) -> Unit,
+    value: Boolean
+) {
+    Scaffold(
+        Modifier.fillMaxSize(),
+        backgroundColor = OwnTheme.colors.secondaryBackground.copy(alpha = 0.3f),
+    ) {
+        Box(modifier = Modifier
+            .fillMaxSize()
+            .blur(3.dp))
+        val list = remember{mutableStateListOf<Modeldb>()}
+        val roomData = mainViewModel.getAllRoomData.collectAsState()
+        roomData.value?.let {listModeldb->
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(OwnTheme.colors.secondaryBackground.copy(alpha = 0.3f))
+                    .border(
+                        2.dp,
+                        color = OwnTheme.colors.tintColor,
+                        shape = OwnTheme.shapes.cornersStyle
+                    )
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                items(listModeldb) {model->
+                    Button(
+                        shape = OwnTheme.shapes.cornersStyle,
+                        colors = ButtonDefaults.buttonColors(backgroundColor = OwnTheme.colors.button),
+                        onClick = {
+                            model.apply {
+                                mainViewModel.update(
+                                    Modeldb(
+                                        id = id,
+                                        word = word,
+                                        linkToSound = linkToSound,
+                                        definitions = definitions,
+                                        examples = examples,
+                                        note = note,
+                                        data = data,
+                                        similar = similar,
+                                        urlToImage = urlToImage,
+                                        isUsingInCard = true
+                                    )
+                                )
+                            }
+                        }) {
+                        Text(
+                            text = model.word,
+                            color = OwnTheme.colors.primaryText,
+                            fontSize = OwnTheme.typography.general.fontSize.value.sp
+                        )
+                    }
                 }
             }
         }
@@ -123,12 +394,63 @@ fun getListByDataSort(mainViewModel: MainViewModel) {
 }
 
 @Composable
+@ExperimentalMaterial3Api
+fun SwipeToDismiss(
+    state: DismissState,
+    background: @Composable RowScope.() -> Unit,
+    dismissContent: @Composable RowScope.() -> Unit,
+    modifier: Modifier = Modifier,
+    directions: Set<DismissDirection> = setOf(
+        DismissDirection.EndToStart,
+        DismissDirection.StartToEnd
+    ),
+) {
+}
+
+@Composable
+private fun AddCardButton(
+    isChoseScreenOpen: (Boolean) -> Unit,
+    value: Boolean
+) {
+    FloatingActionButton(
+        onClick = {
+            isChoseScreenOpen(!value)
+        }) {
+        Icon(ImageVector.vectorResource(R.drawable.add_card_1), null)
+    }
+}
+
+//TODO("Исправить эту срань")
+@Composable
+fun CertainCard(modeldb: Modeldb, mainViewModel: MainViewModel, cardScreenVM: CardScreenVM) {
+    var isFrontSide by remember { mutableStateOf(true) }
+    if (isFrontSide) {
+        Log.e("localError", "4")
+        CardsScreenMainCardFront(
+            modeldb = modeldb,
+            setOtherSide = { isFrontSide = it },
+            cardScreenVM = cardScreenVM
+        )
+    } else {
+        Log.e("localError", "5")
+        CardsScreenMainCardBack(
+            mainViewModel = mainViewModel,
+            modeldb = modeldb,
+            setOtherSide = { isFrontSide = it }
+        )
+    }
+}
+
+@SuppressLint("UnrememberedMutableState")
+@Composable
 fun CardsScreenMainCardFront(
     modeldb: Modeldb,
-    width: Int,
-    height: Int,
-    setOtherSide: (Boolean) -> Unit
+    width: Int = 350,
+    height: Int = 150,
+    setOtherSide: (Boolean) -> Unit,
+    cardScreenVM: CardScreenVM
 ) {
+    //Log.e("localError", "8")
     Box(
         modifier = Modifier
             .width(width.dp)
@@ -168,18 +490,13 @@ fun CardsScreenMainCardFront(
                         .padding(start = OwnTheme.dp.smallDp)
                 ) {
                     Column(Modifier.verticalScroll(rememberScrollState())) {
-                        var localSimilarWordContainer by remember { mutableStateOf("") }
                         Text(
                             text = "Similar words",
                             fontSize = OwnTheme.typography.general.fontSize,
                             color = OwnTheme.colors.primaryText
                         )
-                        modeldb.similar.forEach {
-                            localSimilarWordContainer += it
-                            localSimilarWordContainer += ", "
-                        }
                         Text(
-                            text = localSimilarWordContainer.dropLast(2),
+                            text = cardScreenVM.getSimilarWords(modeldb).dropLast(2),
                             fontSize = OwnTheme.typography.general.fontSize,
                             color = OwnTheme.colors.primaryText
                         )
@@ -224,7 +541,7 @@ fun CardsScreenMainCardFront(
                     .width(30.dp)
                     .border(2.dp, OwnTheme.colors.tintColor, newShape)
                     .clickable {
-                        setOtherSide(true)
+                        setOtherSide(false)
                     }
             )
         }
@@ -236,10 +553,11 @@ fun CardsScreenMainCardFront(
 fun CardsScreenMainCardBack(
     mainViewModel: MainViewModel,
     modeldb: Modeldb,
-    width: Int,
-    height: Int,
+    width: Int = 350,
+    height: Int = 150,
     setOtherSide: (Boolean) -> Unit
 ) {
+    Log.e("localError", "9")
     val scope = CoroutineScope(SupervisorJob())
     val context = LocalContext.current
     Box {
@@ -258,7 +576,7 @@ fun CardsScreenMainCardBack(
                     .width(30.dp)
                     .border(2.dp, OwnTheme.colors.tintColor, otherwiseNewShape)
                     .clickable {
-                        setOtherSide(false)
+                        setOtherSide(true)
                     }
             )
         }
@@ -330,6 +648,7 @@ fun CardsScreenMainCardBack(
                             ) -> {
                                 launcher.launch("image/*")
                             }
+
                             else -> {
                                 permissionLauncher.launch(Manifest.permission.READ_EXTERNAL_STORAGE)
                             }

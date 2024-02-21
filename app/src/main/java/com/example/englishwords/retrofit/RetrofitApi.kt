@@ -10,4 +10,7 @@ interface RetrofitApi {
 suspend fun getPost(
         @Path("Path") endPoint:String
 ):Response<MainEnglishModel>
+
+@GET
+suspend fun translateSentenсe()
 }

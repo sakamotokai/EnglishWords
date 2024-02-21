@@ -6,18 +6,24 @@ plugins {
 
 android {
     namespace 'com.example.englishwords'
-    compileSdk 33
+    compileSdk 34
 
     defaultConfig {
         applicationId "com.example.englishwords"
         minSdk 26
-        targetSdk 33
+        targetSdk 34
         versionCode 1
         versionName "1.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
             useSupportLibrary true
+        }
+
+        javaCompileOptions {
+            annotationProcessorOptions {
+                arguments += ["room.schemaLocation": "$projectDir/schemas".toString()]
+            }
         }
     }
 
@@ -61,8 +67,8 @@ dependencies {
     implementation "androidx.work:work-runtime-ktx:$work_version"
 
     //Koin
-    def koin_version= "3.3.2"
-    def koin_android_compose_version= "3.4.1"
+    def koin_version = "3.3.2"
+    def koin_android_compose_version = "3.4.1"
     implementation "io.insert-koin:koin-androidx-compose:$koin_android_compose_version"
     implementation "io.insert-koin:koin-core:$koin_version"
     implementation "io.insert-koin:koin-android:$koin_version"

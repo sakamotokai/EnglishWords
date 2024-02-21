@@ -9,6 +9,7 @@ import com.example.englishwords.models.preferencesModels.SettingsSharedPreferenc
 import com.example.englishwords.backgroundWork.notifications.SendNotificationReceiverImpl
 import com.example.englishwords.repositorys.Repository
 import com.example.englishwords.retrofit.RetrofitInstance
+import com.example.englishwords.screens.cardsScreen.CardScreenVM
 import com.example.englishwords.screens.mainScreen.MainScreenViewModel
 import com.example.englishwords.screens.settingsScreen.SettingsViewModel
 import com.example.englishwords.screens.settingsScreen.notifications.NotificationViewModel
@@ -67,6 +68,7 @@ var viewModelsModule = module{
     }
     viewModelOf(::MainScreenViewModel)
     viewModelOf(::WordKeepedViewModel)
+    viewModelOf(::CardScreenVM)
     single {
         DrawerViewModel()
     }

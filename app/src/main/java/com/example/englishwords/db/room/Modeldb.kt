@@ -53,5 +53,6 @@ class Modeldb(
     override var note: String = "",
     override var data: List<String> = listOf(),
     override var similar: List<String> = listOf(),
-    override var urlToImage: String = ""
+    override var urlToImage: String = "",
+    var isUsingInCard:Boolean = false
 ) : ModelRoomDatabase
